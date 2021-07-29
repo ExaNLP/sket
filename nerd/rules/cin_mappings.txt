@@ -1,6 +1,0 @@
-cin1	low grade cervical squamous intraepithelial neoplasia
-cin2	cervical squamous intraepithelial neoplasia 2
-cin3	squamous carcinoma in situ
-cin23	cervical intraepithelial neoplasia grade 2/3
-lsil	low grade cervical squamous intraepithelial neoplasia
-hsil	cervical intraepithelial neoplasia grade 2/3
