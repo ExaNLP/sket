@@ -1,0 +1,21 @@
+dysplasia	mild,moderate,severe,low-grade,low-degree,low grade,low degree,low,high-grade,high-degree,high grade,high degree,high,strong,mild-to-moderate,mild to moderate,mild and moderate,moderate-to-severe,moderate to severe,moderate and severe,focally severe,severe focally,severe focal,moderate-severe,mild-moderate,mild-severe,mild to severe,mild and severe,mild-to-severe	BOTH	LOOSE	colon,cervix
+hyperplastic	polyp,polyp-adenomatous,adenomatous polyp,polyp adenomatous type,adenomatous polyp-type,polyp-type,polyp-focal adenomatous,polyp focal adenomatous,polyp-inflammatory	BOTH	EXACT	colon
+hyperplastic polyp	adenomatous,adenomatous type,focal adenomatous,inflammatory	BOTH	EXACT	colon
+transverse	colon	POST	EXACT	colon
+descending	colon	POST	EXACT	colon
+rectal	mucous membrane	POST	EXACT	colon
+ascending	colon	POST	EXACT	colon
+sigmoid	colon	POST	EXACT	colon
+right	colon	POST	EXACT	colon
+left	colon	POST	EXACT	colon
+rectum	nos	POST	EXACT	colon
+colon	nos	POST	EXACT	colon
+uterus	nos	POST	EXACT	cervix
+carcinoma	in situ	POST	EXACT	cervix
+squamous cell carcinoma	in situ	POST	EXACT	cervix
+squamous carcinoma	in situ	POST	EXACT	cervix
+cervical adenocarcinoma	in situ	POST	EXACT	cervix
+uterine cervix carcinoma	in situ	POST	EXACT	cervix
+leep	cervical	BOTH	EXACT	cervix
+epithelium	exocervical,endocervical	BOTH	EXACT	cervix
+squamous intraepithelial lesion	low-grade,low grade,low,high-grade,high grade,high	BOTH	LOOSE	cervix
