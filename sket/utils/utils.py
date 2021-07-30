@@ -651,3 +651,177 @@ def radboud_cervix_labels2aggregates(report_labels):
 			coarse_labels[rid]['slide_ids'] = rlabels['slide_ids']
 			fine_labels[rid]['slide_ids'] = rlabels['slide_ids']
 	return coarse_labels, fine_labels
+
+
+# GENERAL-PURPOSE FUNCTIONS
+
+def colon_concepts2labels(report_concepts):
+	"""
+	Convert the concepts extracted from colon reports to the set of pre-defined labels used for classification
+
+	Params:
+		report_concepts (dict(list)): the dict containing for each colon report the extracted concepts
+
+	Returns: a dict containing for each colon report the set of pre-defined labels where 0 = absence and 1 = presence
+	"""
+
+	report_labels = dict()
+	# loop over reports
+	for rid, rconcepts in report_concepts.items():
+		# assign pre-defined set of labels to current report
+		report_labels[rid] = {'cancer': 0, 'hgd': 0, 'lgd': 0, 'hyperplastic': 0, 'ni': 0}
+		# textify diagnosis section
+		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# update pre-defined labels w/ 1 in case of label presence
+		if 'colon adenocarcinoma' in diagnosis:  # update cancer
+			report_labels[rid]['cancer'] = 1
+		if 'dysplasia' in diagnosis:  # diagnosis contains dysplasia
+			if 'mild' in diagnosis:  # update lgd
+				report_labels[rid]['lgd'] = 1
+			if 'moderate' in diagnosis:  # update lgd
+				report_labels[rid]['lgd'] = 1
+			if 'severe' in diagnosis:  # update hgd
+				report_labels[rid]['hgd'] = 1
+		if 'hyperplastic polyp' in diagnosis:  # update hyperplastic
+			report_labels[rid]['hyperplastic'] = 1
+		if sum(report_labels[rid].values()) == 0:  # update ni
+			report_labels[rid]['ni'] = 1
+	return report_labels
+
+
+def colon_labels2binary(report_labels):
+	"""
+	Convert the pre-defined labels extracted from colon reports to binary labels used for classification
+
+	Params:
+		report_labels (dict(list)): the dict containing for each colon report the pre-defined labels
+
+	Returns: a dict containing for each colon report the set of binary labels where 0 = absence and 1 = presence
+	"""
+
+	binary_labels = dict()
+	# loop over reports
+	for rid, rlabels in report_labels.items():
+		# assign binary labels to current report
+		binary_labels[rid] = {'cancer_or_dysplasia': 0, 'other': 0}
+		# update binary labels w/ 1 in case of label presence
+		if rlabels['cancer'] == 1 or rlabels['lgd'] == 1 or rlabels['hgd'] == 1:  # update cancer_or_dysplasia label
+			binary_labels[rid]['cancer_or_dysplasia'] = 1
+		else:  # update other label
+			binary_labels[rid]['other'] = 1
+	return binary_labels
+
+
+def cervix_concepts2labels(report_concepts):
+	"""
+	Convert the concepts extracted from cervix reports to the set of pre-defined labels used for classification
+
+	Params:
+		report_concepts (dict(list)): the dict containing for each cervix report the extracted concepts
+
+	Returns: a dict containing for each cervix report the set of pre-defined labels where 0 = absence and 1 = presence
+	"""
+
+	report_labels = dict()
+	# loop over reports
+	for rid, rconcepts in report_concepts.items():
+		# assign pre-defined set of labels to current report
+		report_labels[rid] = {
+			'cancer_scc_inv': 0, 'cancer_scc_insitu': 0, 'cancer_adeno_inv': 0, 'cancer_adeno_insitu': 0,
+			'lgd': 0, 'hgd': 0,
+			'hpv': 0, 'koilocytes': 0,
+			'glands_norm': 0, 'squamous_norm': 0
+		}
+		# textify diagnosis section
+		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# update pre-defined labels w/ 1 in case of label presence
+		if 'cervical squamous cell carcinoma' in diagnosis:
+			report_labels[rid]['cancer_scc_inv'] = 1
+		if 'squamous carcinoma in situ' in diagnosis or 'squamous intraepithelial neoplasia' in diagnosis:
+			report_labels[rid]['cancer_scc_insitu'] = 1
+		if 'cervical adenocarcinoma' in diagnosis:
+			if 'cervical adenocarcinoma in situ' in diagnosis:
+				report_labels[rid]['cancer_adeno_insitu'] = 1
+			else:
+				report_labels[rid]['cancer_adeno_inv'] = 1
+		if 'low grade cervical squamous intraepithelial neoplasia' in diagnosis:
+			report_labels[rid]['lgd'] = 1
+		if 'squamous carcinoma in situ' in diagnosis or \
+				'squamous intraepithelial neoplasia' in diagnosis or \
+				'cervical squamous intraepithelial neoplasia 2' in diagnosis or \
+				'cervical intraepithelial neoplasia grade 2/3' in diagnosis:
+			report_labels[rid]['hgd'] = 1
+		if 'human papilloma virus infection' in diagnosis:
+			report_labels[rid]['hpv'] = 1
+		if 'koilocytotic squamous cell' in diagnosis:
+			report_labels[rid]['koilocytes'] = 1
+		if sum(report_labels[rid].values()) == 0:
+			report_labels[rid]['glands_norm'] = 1
+			report_labels[rid]['squamous_norm'] = 1
+	return report_labels
+
+
+def cervix_labels2aggregates(report_labels):
+	"""
+	Convert the pre-defined labels extracted from cervix reports to coarse- and fine-grained aggregated labels
+		Params:
+			report_labels (dict(list)): the dict containing for each cervix report the pre-defined labels
+		Returns: two dicts containing for each cervix report the set of aggregated labels where 0 = absence and 1 = presence
+	"""
+
+	coarse_labels = dict()
+	fine_labels = dict()
+	# loop over reports
+	for rid, rlabels in report_labels.items():
+		# assign aggregated labels to current report
+		coarse_labels[rid] = {'cancer': 0, 'dysplasia': 0, 'normal': 0}
+		fine_labels[rid] = {'cancer_adeno': 0, 'cancer_scc': 0, 'dysplasia': 0, 'glands_norm': 0, 'squamous_norm': 0}
+		# update aggregated labels w/ 1 in case of label presence
+		if rlabels['cancer_adeno_inv'] == 1 or rlabels['cancer_adeno_insitu'] == 1:
+			coarse_labels[rid]['cancer'] = 1
+			fine_labels[rid]['cancer_adeno'] = 1
+		if rlabels['cancer_scc_inv'] == 1 or rlabels['cancer_scc_insitu'] == 1:
+			coarse_labels[rid]['cancer'] = 1
+			fine_labels[rid]['cancer_scc'] = 1
+		if rlabels['lgd'] == 1 or rlabels['hgd'] == 1:
+			coarse_labels[rid]['dysplasia'] = 1
+			fine_labels[rid]['dysplasia'] = 1
+		if rlabels['glands_norm'] == 1:
+			coarse_labels[rid]['normal'] = 1
+			fine_labels[rid]['glands_norm'] = 1
+		if rlabels['squamous_norm'] == 1:
+			coarse_labels[rid]['normal'] = 1
+			fine_labels[rid]['squamous_norm'] = 1
+	return coarse_labels, fine_labels
+
+
+def lung_concepts2labels(report_concepts):
+	"""
+	Convert the concepts extracted from lung reports to the set of pre-defined labels used for classification
+
+	Params:
+		report_concepts (dict(list)): the dict containing for each lung report the extracted concepts
+
+	Returns: a dict containing for each lung report the set of pre-defined labels where 0 = absence and 1 = presence
+	"""
+
+	report_labels = dict()
+	# loop over reports
+	for rid, rconcepts in report_concepts.items():
+		# assign pre-defined set of labels to current report
+		report_labels[rid] = {
+			'cancer_scc': 0, 'cancer_nscc_adeno': 0, 'cancer_nscc_squamous': 0, 'cancer_nscc_large': 0, 'no_cancer': 0}
+		# textify diagnosis section
+		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# update pre-defined labels w/ 1 in case of label presence
+		if 'small cell lung carcinoma' in diagnosis:
+			report_labels[rid]['cancer_scc'] = 1
+		if 'lung adenocarcinoma' in diagnosis or 'clear cell adenocarcinoma' in diagnosis or 'metastatic neoplasm' in diagnosis:
+			report_labels[rid]['cancer_nscc_adeno'] = 1
+		if 'non-small cell squamous lung carcinoma' in diagnosis:
+			report_labels[rid]['cancer_nscc_squamous'] = 1
+		if 'lung large cell carcinoma' in diagnosis:
+			report_labels[rid]['cancer_nscc_large'] = 1
+		if sum(report_labels[rid].values()) == 0:
+			report_labels[rid]['no_cancer'] = 1
+	return report_labels
