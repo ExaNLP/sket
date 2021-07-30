@@ -2,6 +2,7 @@ import pandas as pd
 import math
 import string
 import re
+import uuid
 import copy
 import roman
 
@@ -28,10 +29,14 @@ class ReportProc(object):
 
 		self.use_case = use_case
 
-		# set NMT model
-		self.nmt_name = 'Helsinki-NLP/opus-mt-' + src_lang + '-en'
-		self.tokenizer = MarianTokenizer.from_pretrained(self.nmt_name)
-		self.nmt = MarianMTModel.from_pretrained(self.nmt_name)
+		if src_lang != 'en':  # set NMT model
+			self.nmt_name = 'Helsinki-NLP/opus-mt-' + src_lang + '-en'
+			self.tokenizer = MarianTokenizer.from_pretrained(self.nmt_name)
+			self.nmt = MarianMTModel.from_pretrained(self.nmt_name)
+		else:  # no NMT model required
+			self.nmt_name = None
+			self.tokenizer = None
+			self.nmt = None
 
 		# build regex for bullet patterns
 		self.en_roman_regex = re.compile('((?<=(^i-ii(\s|:|\.)))|(?<=(^i-iii(\s|:|\.)))|(?<=(^ii-iii(\s|:|\.)))|(?<=(^i-iv(\s|:|\.)))|(?<=(^ii-iv(\s|:|\.)))|(?<=(^iii-iv(\s|:|\.)))|(?<=(^i and ii(\s|:|\.)))|(?<=(^i and iii(\s|:|\.)))|(?<=(^ii and iii(\s|:|\.)))|(?<=(^i and iv(\s|:|\.)))|(?<=(^ii and iv(\s|:|\.)))|(?<=(^iii and iv(\s|:|\.)))|(?<=(^i(\s|:|\.)))|(?<=(^ii(\s|:|\.)))|(?<=(^iii(\s|:|\.)))|(?<=(^iv(\s|:|\.)))|(?<=(\si-ii(\s|:|\.)))|(?<=(\si-iii(\s|:|\.)))|(?<=(\sii-iii(\s|:|\.)))|(?<=(\si-iv(\s|:|\.)))|(?<=(\sii-iv(\s|:|\.)))|(?<=(\siii-iv(\s|:|\.)))|(?<=(\si and ii(\s|:|\.)))|(?<=(\si and iii(\s|:|\.)))|(?<=(\sii and iii(\s|:|\.)))|(?<=(\si and iv(\s|:|\.)))|(?<=(\sii and iv(\s|:|\.)))|(?<=(\siii and iv(\s|:|\.)))|(?<=(\si(\s|:|\.)))|(?<=(\sii(\s|:|\.)))|(?<=(\siii(\s|:|\.)))|(?<=(\siv(\s|:|\.))))(.*?)((?=(\si+(\s|:|\.|-)))|(?=(\siv(\s|:|\.|-)))|(?=($)))')
@@ -63,10 +68,14 @@ class ReportProc(object):
 		Returns: None
 		"""
 
-		# update NMT model
-		self.nmt_name = 'Helsinki-NLP/opus-mt-' + src_lang + '-en'
-		self.tokenizer = MarianTokenizer.from_pretrained(self.nmt_name)
-		self.nmt = MarianMTModel.from_pretrained(self.nmt_name)
+		if src_lang != 'en':  # update NMT model
+			self.nmt_name = 'Helsinki-NLP/opus-mt-' + src_lang + '-en'
+			self.tokenizer = MarianTokenizer.from_pretrained(self.nmt_name)
+			self.nmt = MarianMTModel.from_pretrained(self.nmt_name)
+		else:  # no NMT model required
+			self.nmt_name = None
+			self.tokenizer = None
+			self.nmt = None
 
 	def load_dataset(self, reports_path, sheet, header): 
 		"""
@@ -507,4 +516,42 @@ class ReportProc(object):
 		# translate text
 		for rid, report in tqdm(trans_reports.items()):
 			trans_reports[rid]['diagnosis'] = self.translate_text(report['diagnosis'])
+		return trans_reports
+
+	# GENERAL-PURPOSE FUNCTIONS
+
+	def process_data(self, dataset):
+		"""
+		Read reports and extract the required fields
+
+		Params:
+			dataset (dict): target dataset
+
+		Returns: a dict containing the required report fields
+		"""
+
+		proc_reports = {}
+		for report in dataset['reports']:
+			if 'id' in report:
+				rid = report.pop('id')  # use provided id
+			else:
+				rid = str(uuid.uuid4())  # generate uuid
+			proc_reports[rid] = report
+		return proc_reports
+
+	def translate_reports(self, reports):
+		"""
+		Translate reports
+
+		Params:
+			reports (dict): reports
+
+		Returns: translated reports
+		"""
+
+		trans_reports = copy.deepcopy(reports)
+		print('translate text')
+		# translate text
+		for rid, report in tqdm(trans_reports.items()):
+			trans_reports[rid]['text'] = self.translate_text(report['text'])
 		return trans_reports
