@@ -1,4 +1,5 @@
 import os
+import uuid
 import json
 
 from .rep_proc.report_processing import ReportProc
@@ -14,7 +15,7 @@ class SKET(object):
     def __init__(
             self,
             use_case, src_lang,
-            biospacy="en_core_sci_lg", biow2v=True, biofast=None, biobert=None, str_match=False, gpu=None, rules=None, dysplasia_mappings=None, cin_mappings=None,
+            biospacy="en_core_sci_sm", biow2v=True, biofast=None, biobert=None, str_match=False, gpu=None, rules=None, dysplasia_mappings=None, cin_mappings=None,
             ontology_path=None, hierarchies_path=None):
         """
         Load SKET components
@@ -49,8 +50,8 @@ class SKET(object):
         # load RDF Processing (RDFProc)
         self.rdf_proc = RDFProc()
 
-        # define set of ad hoc labeling operations @smarchesin TODO: add 'custom' to radboud lung too if required
-        self.ad_hoc_labeling = {
+        # define set of ad hoc labeling operations @smarchesin TODO: add 'custom' to lung too if required
+        self.ad_hoc_exa_labeling = {
             'aoec': {
                 'colon': {
                     'original': utils.aoec_colon_concepts2labels,
@@ -68,6 +69,20 @@ class SKET(object):
                 'cervix': {
                     'original': utils.radboud_cervix_concepts2labels,
                     'custom': utils.radboud_cervix_labels2aggregates}
+            }
+        }
+
+        self.ad_hoc_med_labeling = {
+            'colon': {
+                'original': utils.colon_concepts2labels,
+                'custom': utils.colon_labels2binary
+            },
+            'cervix': {
+                'original': utils.cervix_concepts2labels,
+                'custom': utils.cervix_labels2aggregates
+            },
+            'lung': {
+                'original': utils.lung_concepts2labels
             }
         }
 
@@ -138,9 +153,6 @@ class SKET(object):
         Returns: None
         """
 
-        if src_lang not in ['it', 'nl']:  # raise exception
-            print('current supported source languages are: "it" and "nl"')
-            raise Exception
         # update NMT model
         self.rep_proc.update_nmt(src_lang)
 
@@ -357,7 +369,7 @@ class SKET(object):
         if hospital not in ['aoec', 'radboud']:
             print('provide correct hospital info: "aoec" or "radboud"')
             raise Exception
-        labels = self.ad_hoc_labeling[hospital][self.use_case]['original'](concepts)
+        labels = self.ad_hoc_exa_labeling[hospital][self.use_case]['original'](concepts)
         return labels
 
     def create_exa_graphs(self, reports, concepts, hospital, struct=False):
@@ -456,3 +468,153 @@ class SKET(object):
         self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl')
         # store JSON graphs
         self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json')
+
+    # GENERAL-PURPOSE FUNCTIONS
+
+    def prepare_med_dataset(self, ds, ds_name):
+        """
+        Prepare dataset to perform NERD
+
+        Params:
+            ds (dict): dataset
+            ds_name (str): dataset name
+
+        Returns: translated, split, and prepared dataset
+        """
+
+        # set output directories
+        proc_out = './dataset/processed/' + self.use_case + '/'
+        trans_out = './dataset/translated/' + self.use_case + '/'
+
+        # process reports
+        proc_reports = self.rep_proc.process_data(ds)
+        # store processed reports
+        os.makedirs(proc_out, exist_ok=True)
+        self.store_reports(proc_reports, proc_out + ds_name + '.json')
+
+        # translate reports
+        trans_reports = self.rep_proc.translate_reports(proc_reports)
+        # store translated reports
+        os.makedirs(trans_out, exist_ok=True)
+        self.store_reports(trans_reports, trans_out + ds_name + '.json')
+
+        return trans_reports
+
+    def med_entity_linking(self, reports, sim_thr=0.7, raw=False):
+        """
+        Perform entity linking on input reports
+
+        Params:
+            reports (dict): dict containing reports -- can be either one or many
+            sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+            raw (bool): whether to return concepts within semantic areas or mentions+concepts
+
+        Returns: a dict containing concepts from input reports
+        """
+
+        # perform entity linking
+        concepts = self.nerd.entity_linking(reports, self.onto, self.onto_terms, self.use_case, sim_thr, raw)
+
+        return concepts
+
+    def med_labeling(self, concepts):
+        """
+        Map extracted concepts to pre-defined labels
+
+        Params:
+            concepts (dict): dict containing concepts extracted from report(s)
+
+        Returns: a dict containing labels from input report(s)
+        """
+
+        labels = self.ad_hoc_med_labeling[self.use_case]['original'](concepts)
+        return labels
+
+    def create_med_graphs(self, reports, concepts, struct=False):
+        """
+        Create report graphs in RDF format
+
+        Params:
+            reports (dict): dict containing reports -- can be either one or many
+            concepts (dict): dict containing concepts extracted from report(s)
+            struct (bool): whether to return graphs structured as dict
+
+        Returns: list of (s,p,o) triples representing report graphs and dict structuring report graphs (if struct==True)
+        """
+
+        rdf_graphs = []
+        struct_graphs = []
+        # convert report data into (s,p,o) triples
+        for rid in reports.keys():
+            rdf_graph, struct_graph = self.rdf_proc.create_graph(rid, reports[rid], concepts[rid], self.onto_proc, self.use_case)
+            rdf_graphs.append(rdf_graph)
+            struct_graphs.append(struct_graph)
+        if struct:  # return both rdf and dict graphs
+            return rdf_graphs, struct_graphs
+        else:
+            return rdf_graphs
+
+    def med_pipeline(self, ds, src_lang=None, use_case=None, sim_thr=0.7, raw=False):
+        """
+        Perform the complete SKET pipeline over generic data:
+            - (i) Process dataset
+            - (ii) Translate dataset
+            - (iii) Perform entity linking and store concepts
+            - (iv) Perform labeling and store labels
+            - (v) Create RDF graphs and store graphs
+            - (vi) Return concepts, labels, and RDF graphs
+
+        When raw == True: perform steps i-iii and return mentions+concepts
+
+        Params:
+            ds (dict): dataset
+            src_lang (str): considered language
+            use_case (str): considered use case
+            hosp (str): considered hospital
+            sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+            raw (bool): whether to return concepts within semantic areas or mentions+concepts
+
+        Returns: None
+        """
+
+        if use_case:  # update to input use case
+            self.update_usecase(use_case)
+
+        if src_lang:  # update to input source language
+            self.update_nmt(src_lang)
+
+        # set output directories
+        if raw:  # return mentions+concepts (used for EXATAG)
+            concepts_out = './outputs/concepts/raw/' + self.use_case + '/'
+        else:  # perform complete pipeline (used for SKET/CERT/EXANET)
+            concepts_out = './outputs/concepts/refined/' + self.use_case + '/'
+            labels_out = './outputs/labels/' + self.use_case + '/'
+            rdf_graphs_out = './outputs/graphs/rdf/' + self.use_case + '/'
+            struct_graphs_out = './outputs/graphs/json/' + self.use_case + '/'
+
+        # set dataset name
+        ds_name = str(uuid.uuid4())
+        # prepare dataset
+        reports = self.prepare_med_dataset(ds, ds_name)
+
+        # perform entity linking
+        concepts = self.med_entity_linking(reports, sim_thr, raw)
+        # store concepts
+        self.store_concepts(concepts, concepts_out + 'concepts_' + ds_name + '.json')
+        if raw:  # return mentions+concepts
+            return concepts
+
+        # perform labeling
+        labels = self.med_labeling(concepts)
+        # store labels
+        self.store_labels(labels, labels_out + 'labels_' + ds_name + '.json')
+        # create RDF graphs
+        rdf_graphs, struct_graphs = self.create_med_graphs(reports, concepts, struct=True)
+        # store RDF graphs
+        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3')
+        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig')
+        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl')
+        # store JSON graphs
+        self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json')
+
+        return concepts, labels, rdf_graphs
