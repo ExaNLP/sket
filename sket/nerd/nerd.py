@@ -512,7 +512,7 @@ class NERD(object):
 		else:  # return (mention, None) pair
 			return [[mention.text, None]]
 
-	def link_mentions_to_concepts(self, mentions, labels, use_case_ontology, sim_thr=0.7):
+	def link_mentions_to_concepts(self, mentions, labels, use_case_ontology, sim_thr=0.7, raw=False):
 		"""
 		Link identified entity mentions to ontology concepts 
 
@@ -521,6 +521,7 @@ class NERD(object):
 			labels (list(spacy.token.span.Span)): list of concept labels from reference ontology
 			use_case_ontology (pandas DataFrame): reference ontology restricted to the use case considered
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			raw (bool): whether to return concepts within semantic areas or mentions+concepts
 
 		Returns: a dict of identified ontology concepts {semantic_area: [iri, mention, label], ...}
 		"""
@@ -534,11 +535,14 @@ class NERD(object):
 		linked_data = [(mention_and_concept[0], use_case_ontology.loc[use_case_ontology['label'].str.lower() == mention_and_concept[1]][['iri', 'label', 'semantic_area_label']].values[0].tolist()) for mention_and_concept in mentions_and_concepts if mention_and_concept[1] is not None]
 		# filter out linked data 'semantic_area_label' == None
 		linked_data = [linked_datum for linked_datum in linked_data if linked_datum[1][2] is not None]
-		# return linked concepts divided into semantic areas
-		linked_concepts = {area: [] for area in set(use_case_ontology['semantic_area_label'].tolist()) if area is not None}
-		for linked_datum in linked_data:
-			linked_concepts[str(linked_datum[1][2])].append([linked_datum[1][0], linked_datum[1][1]])
-		return linked_concepts
+		if raw:  # return mentions+concepts
+			return linked_data
+		else:  # return concepts within semantic areas
+			# return linked concepts divided into semantic areas
+			linked_concepts = {area: [] for area in set(use_case_ontology['semantic_area_label'].tolist()) if area is not None}
+			for linked_datum in linked_data:
+				linked_concepts[str(linked_datum[1][2])].append([linked_datum[1][0], linked_datum[1][1]])
+			return linked_concepts
 
 	# COLON SPECIFIC LINKING FUNCTIONS
 
@@ -1177,4 +1181,33 @@ class NERD(object):
 			if 'slide_ids' in rdata:
 				concepts[rid]['slide_ids'] = rdata['slide_ids']
 		# return linked concepts divided per diagnosis
+		return concepts
+
+	# GENERAL-PURPOSE FUNCTIONS
+
+	def entity_linking(self, reports, use_case_ontology, labels, use_case, sim_thr=0.7, raw=False):
+		"""
+		Perform entity linking over translated and processed reports
+
+		Params:
+			reports (dict): target reports
+			use_case_ontology (pandas.core.frame.DataFrame): ontology data restricted to given use case
+			labels (list(spacy.tokens.doc.Doc)): list of processed ontology concepts
+			use_case (str): the use_case considered - i.e. colon, lung, cervix, or celiac
+			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			raw (bool): whether to return concepts within semantic areas or mentions+concepts
+
+		Returns: a dict containing the linked concepts for each report
+		"""
+
+		concepts = dict()
+		# loop over translated and processed reports and perform linking
+		for rid, rdata in tqdm(reports.items()):
+			concepts[rid] = dict()
+			# extract entity mentions from text
+			mentions = self.extract_entity_mentions(utils.en_sanitize_record(rdata['text'], use_case))
+			# link and store concepts from text
+			concepts[rid] = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr, raw)
+
+		# return concepts divided per diagnosis
 		return concepts
