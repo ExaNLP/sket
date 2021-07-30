@@ -471,13 +471,14 @@ class SKET(object):
 
     # GENERAL-PURPOSE FUNCTIONS
 
-    def prepare_med_dataset(self, ds, ds_name):
+    def prepare_med_dataset(self, ds, ds_name, src_lang=None):
         """
         Prepare dataset to perform NERD
 
         Params:
             ds (dict): dataset
             ds_name (str): dataset name
+            src_lang (str): considered language
 
         Returns: translated, split, and prepared dataset
         """
@@ -492,8 +493,10 @@ class SKET(object):
         os.makedirs(proc_out, exist_ok=True)
         self.store_reports(proc_reports, proc_out + ds_name + '.json')
 
-        # translate reports
-        trans_reports = self.rep_proc.translate_reports(proc_reports)
+        if src_lang != 'en':  # translate reports
+            trans_reports = self.rep_proc.translate_reports(proc_reports)
+        else:  # keep processed reports
+            trans_reports = proc_reports
         # store translated reports
         os.makedirs(trans_out, exist_ok=True)
         self.store_reports(trans_reports, trans_out + ds_name + '.json')
@@ -595,7 +598,7 @@ class SKET(object):
         # set dataset name
         ds_name = str(uuid.uuid4())
         # prepare dataset
-        reports = self.prepare_med_dataset(ds, ds_name)
+        reports = self.prepare_med_dataset(ds, ds_name, src_lang)
 
         # perform entity linking
         concepts = self.med_entity_linking(reports, sim_thr, raw)
