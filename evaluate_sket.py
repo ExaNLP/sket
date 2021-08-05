@@ -1,15 +1,18 @@
 import numpy as np
 import json
+import glob
+import os
 import argparse
 
 from sklearn.metrics import hamming_loss, accuracy_score, classification_report
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gt', default='./ground_truth/colon/aoec/colon_labels_2ndDS.json', type=str, help='Ground truth file.')
-parser.add_argument('--outputs', default='./outputs/labels/aoec/colon/labels_ExaMode_2ndDS_AOEC_Colon_SubjectsAnonymized.json', type=str, help='SKET results file.')
-parser.add_argument('--use_case', default='colon', choices=['colon', 'cervix', 'lung'], help='Considered use-case.')
+parser.add_argument('--gt', default='./ground_truth/lung/aoec/lung_labels_allDS.json', type=str, help='Ground truth file.')
+parser.add_argument('--outputs', default='./outputs/labels/aoec/lung/*.json', type=str, help='SKET results file.')
+parser.add_argument('--use_case', default='lung', choices=['colon', 'cervix', 'lung'], help='Considered use-case.')
 parser.add_argument('--hospital', default='aoec', choices=['aoec', 'radboud'], help='Considered hospital.')
+parser.add_argument('--debug', default=True, type=bool, help='Whether to use evaluation for debugging purposes.')
 args = parser.parse_args()
 
 
@@ -44,6 +47,10 @@ label2class = {
 
 
 def main():
+    # create path for debugging
+    debug_path = './logs/debug/' + args.hospital + '/' + args.use_case + '/'
+    os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+
     # read ground-truth
     with open(args.gt, 'r') as gtf:
         ground_truth = json.load(gtf)
@@ -56,20 +63,36 @@ def main():
         ground_truth = ground_truth['ground_truth']
         for data in ground_truth:
             rid = data['report_id_not_hashed']
+
+            if len(rid.split('_')) == 3 and args.hospital == 'aoec':  # contains codeint info not present within new processed reports
+                rid = rid.split('_')
+                rid = rid[0] + '_' + rid[2]
+
             gt[rid] = {label2class[args.use_case][label]: 0 for label in label2class[args.use_case].keys()}
             for datum in data['labels']:
                 label = label2class[args.use_case][datum['label']]
                 if label in gt[rid]:
                     gt[rid][label] = 1
+    # gt name
+    gt_name = args.gt.split('/')[-1].split('.')[0]
 
     # read SKET results
-    with open(args.outputs, 'r') as rsf:
-        rs = json.load(rsf)
+    if '*.json' == args.outputs.split('/')[-1]:  # read files
+        # read file paths
+        rsfps = glob.glob(args.outputs)
+        # set dict
+        rs = {}
+        for rsfp in rsfps:
+            with open(rsfp, 'r') as rsf:
+                rs.update(json.load(rsf))
+    else:  # read file
+        with open(args.outputs, 'r') as rsf:
+            rs = json.load(rsf)
 
     sket = {}
     # prepare SKET results for evaluation
     for rid, rdata in rs.items():
-        if args.use_case == 'colon' and args.hospital == 'aoec':
+        if args.use_case == 'colon' and args.hospital == 'aoec' and '2ndDS' in args.gt:
             rid = rid.split('_')[0]
         if args.hospital == 'radboud' and args.use_case == 'colon':
             sket[rid] = rdata['labels']
@@ -84,14 +107,32 @@ def main():
     gt_scores = []
     sket_scores = []
 
+    if args.debug:  # open output for debugging
+        debugf = open(debug_path + gt_name + '.txt', 'w+')
+
     for rid in gt.keys():
         gt_rscores = []
         sket_rscores = []
+        if rid not in sket:
+            print('skipped gt record: {}'.format(rid))
+            continue
+        if args.debug:
+            first = True
         for c in classes:
             gt_rscores.append(gt[rid][c])
             sket_rscores.append(sket[rid][c])
+            if args.debug:  # perform debugging
+                if gt[rid][c] != sket[rid][c]:  # store info for debugging purposes
+                    if first:  # first occurence
+                        debugf.write('\nReport ID: {}\n'.format(rid))
+                        first = False
+                    debugf.write(c + ': gt = {}, sket = {}\n'.format(gt[rid][c], sket[rid][c]))
         gt_scores.append(gt_rscores)
         sket_scores.append(sket_rscores)
+
+    if args.debug:  # close output for debugging
+        debugf.close()
+
     # convert to numpy
     gt_scores = np.array(gt_scores)
     sket_scores = np.array(sket_scores)
