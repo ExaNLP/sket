@@ -1,3 +1,3 @@
 # Cervix datasets
 
-Put here datasets for cervix pathology reports.
+Put here datasets containing Cervix Uterine Cancer pathology reports.
