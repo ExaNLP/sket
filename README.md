@@ -9,7 +9,7 @@ Clone this repository
 git clone https://github.com/ExaNLP/sket.git
 ```
 
-Then install all the requirements:
+Install all the requirements:
 
 ```bash
 pip install -r requirements.txt
