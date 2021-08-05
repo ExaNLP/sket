@@ -165,7 +165,7 @@ class NERD(object):
 					elif mode == 'LOOSE':  # candidates are matched by finding matches within preceding tokens
 						spans = self.pre_loose_match(doc, ent, trigger, target_candidates, spans)
 					else:  # wrong or mispelled mode - return exception
-						print("The mode is wrong or mispelled in the rules.txt file")
+						print("The mode is wrong or misspelled in the rules.txt file")
 						raise Exception
 				elif location == 'POST':  # candidates are matched on subsequent tokens 
 					if mode == 'EXACT':  # candidates are matched by exact matching immediately subsequent tokens
@@ -173,7 +173,7 @@ class NERD(object):
 					elif mode == 'LOOSE':  # candidates are matched by finding matches within subsequent tokens
 						spans = self.post_loose_match(doc, ent, trigger, target_candidates, spans)
 					else:  # wrong or mispelled mode - return exception
-						print("The mode is wrong or mispelled in the rules.txt file")
+						print("The mode is wrong or misspelled in the rules.txt file")
 						raise Exception
 				elif location == 'BOTH':  # candidates are matched on preceding and subsequent tokens
 					if mode == 'EXACT':  # candidates are matched by exact matching immediately preceding and subsequent tokens
@@ -183,10 +183,10 @@ class NERD(object):
 						spans = self.pre_loose_match(doc, ent, trigger, target_candidates, spans)
 						spans = self.post_loose_match(doc, ent, trigger, target_candidates, spans)
 					else:  # wrong or mispelled mode - return exception
-						print("The mode is wrong or mispelled in the rules.txt file")
+						print("The mode is wrong or misspelled in the rules.txt file")
 						raise Exception
 				else:  # error in the rules.txt file
-					print("The positional information is wrong or mispelled in the rules.txt file")
+					print("The positional information is wrong or misspelled in the rules.txt file")
 					raise Exception
 			else:  # current entity does not present a trigger
 				spans.append([ent.start, ent.end])
@@ -512,7 +512,7 @@ class NERD(object):
 		else:  # return (mention, None) pair
 			return [[mention.text, None]]
 
-	def link_mentions_to_concepts(self, mentions, labels, use_case_ontology, sim_thr=0.7, raw=False):
+	def link_mentions_to_concepts(self, mentions, labels, use_case_ontology, sim_thr=0.7, raw=False, debug=False):
 		"""
 		Link identified entity mentions to ontology concepts 
 
@@ -522,12 +522,13 @@ class NERD(object):
 			use_case_ontology (pandas DataFrame): reference ontology restricted to the use case considered
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
 			raw (bool): whether to return concepts within semantic areas or mentions+concepts
+			debug (bool): whether to keep flags for debugging
 
 		Returns: a dict of identified ontology concepts {semantic_area: [iri, mention, label], ...}
 		"""
 
 		# link mentions to concepts
-		mentions_and_concepts = [self.use_case_ad_hoc_linking(mention, labels, sim_thr) for mention in mentions]
+		mentions_and_concepts = [self.use_case_ad_hoc_linking(mention, labels, sim_thr, debug) for mention in mentions]
 		mentions_and_concepts = list(itertools.chain.from_iterable(mentions_and_concepts))
 		# post process mentions and concepts based on the considered use case
 		mentions_and_concepts = self.use_case_ad_hoc_post_processing(mentions_and_concepts)
@@ -546,7 +547,7 @@ class NERD(object):
 
 	# COLON SPECIFIC LINKING FUNCTIONS
 
-	def ad_hoc_colon_linking(self, mention, labels, sim_thr=0.7):
+	def ad_hoc_colon_linking(self, mention, labels, sim_thr=0.7, debug=False):
 		"""
 		Perform set of colon ad hoc linking functions 
 
@@ -554,6 +555,7 @@ class NERD(object):
 			mention (spacy.tokens.span.Span): entity mention extracted from text
 			labels (list(spacy.token.span.Span)): list of concept labels from reference ontology
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			debug (bool): whether to keep flags for debugging
 
 		Returns: matched ontology concept label(s)
 		"""
@@ -737,7 +739,7 @@ class NERD(object):
 
 	# CERVIX SPECIFIC LINKING FUNCTIONS
 
-	def ad_hoc_cervix_linking(self, mention, labels, sim_thr=0.7):
+	def ad_hoc_cervix_linking(self, mention, labels, sim_thr=0.7, debug=False):
 		"""
 		Perform set of cervix ad hoc linking functions 
 
@@ -745,6 +747,7 @@ class NERD(object):
 			mention (spacy.tokens.span.Span): entity mention extracted from text
 			labels (list(spacy.token.span.Span)): list of concept labels from reference ontology
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			debug (bool): whether to keep flags for debugging
 
 		Returns: matched ontology concept label(s)
 		"""
@@ -756,7 +759,7 @@ class NERD(object):
 		elif 'hpv' in mention.text:  # mention contains 'hpv'
 			return self.link_cervix_hpv(mention, labels, sim_thr)
 		elif 'infection' in mention.text:  # mention contains 'infection'
-			return self.skip_cervix_infection(mention)
+			return self.skip_cervix_infection(mention, debug=debug)
 		elif 'koilocyt' in mention.text:  # mention contains 'koilocyte'
 			return self.link_cervix_koilocytes(mention)
 		elif 'epithelium' in mention.text or 'junction' in mention.text:  # mention contains 'epithelium' or 'junction'
@@ -922,12 +925,13 @@ class NERD(object):
 		return [[koilocyte_mention, 'koilocytotic squamous cell']]
 
 	@staticmethod
-	def skip_cervix_infection(mention):  # @smarchesin TODO: remove the third case (else condition) after testing
+	def skip_cervix_infection(mention, debug=False):
 		"""
 		Skip 'infection' mentions that are associated to 'hpv'
 
 		Params:
 			mention (spacy.tokens.span.Span): entity mention extracted from text
+			debug (bool): whether to keep flags for debugging
 
 		Returns: cervix concept if 'infection' is not associated to 'hpv' or None otherwise
 		"""
@@ -937,8 +941,9 @@ class NERD(object):
 		elif mention.text == 'viral infection':  # mention contains 'viral infection' only -- skip it
 			return [[mention.text, None]]
 		else:  # mention contains other terms other than 'infection' -- unhandled
-			print('mention contains unhandled "infection" mention -- set temp to None')
-			print(mention.text)
+			if debug:
+				print('mention contains unhandled "infection" mention -- set temp to None')
+				print(mention.text)
 			return [[mention.text, None]]
 
 	# CERVIX SPECIFIC POST PROCESSING OPERATIONS
@@ -1014,7 +1019,7 @@ class NERD(object):
 
 	# LUNG SPECIFIC LINKING FUNCTIONS
 
-	def ad_hoc_lung_linking(self, mention, labels, sim_thr=0.7):
+	def ad_hoc_lung_linking(self, mention, labels, sim_thr=0.7, debug=False):
 		"""
 		Perform set of lung ad hoc linking functions
 
@@ -1022,6 +1027,7 @@ class NERD(object):
 			mention (spacy.tokens.span.Span): entity mention extracted from text
 			labels (list(spacy.token.span.Span)): list of concept labels from reference ontology
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			debug (bool): whether to keep flags for debugging
 
 		Returns: matched ontology concept label(s)
 		"""
@@ -1105,7 +1111,7 @@ class NERD(object):
 
 	# AOEC SPECIFIC FUNCTIONS
 
-	def aoec_entity_linking(self, reports, onto_proc, use_case_ontology, labels, use_case, sim_thr=0.7):
+	def aoec_entity_linking(self, reports, onto_proc, use_case_ontology, labels, use_case, sim_thr=0.7, raw=False, debug=False):
 		"""
 		Perform entity linking over translated AOEC reports
 		
@@ -1116,8 +1122,10 @@ class NERD(object):
 			labels (list(spacy.tokens.doc.Doc)): list of processed ontology concepts
 			use_case (str): the use_case considered - i.e. colon, lung, cervix, or celiac
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			raw (bool): whether to return concepts within semantic areas or mentions+concepts
+			debug (bool): whether to keep flags for debugging
 			
-		Returns: a dict containing the linked concepts for each report w/ distinction between 'nlp' and 'struct' concepts
+		Returns: a dict containing the linked concepts for each report w/o distinction between 'nlp' and 'struct' concepts
 		"""
 		
 		concepts = dict()
@@ -1140,20 +1148,22 @@ class NERD(object):
 			# combine diagnosis and materials mentions
 			mentions = diagnosis + materials
 			# link and store 'nlp' concepts
-			nlp_concepts = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr)
-			# link and store 'struct' concepts
-			struct_concepts = self.lookup_snomed_codes(
-				utils.sanitize_codes(rdata['diagnosis_struct']) +
-				utils.sanitize_codes(rdata['procedure']) +
-				utils.sanitize_codes(rdata['topography']), use_case_ontology)
-			# merge 'nlp' and 'struct' concepts 
-			concepts[rid] = onto_proc.merge_nlp_and_struct(nlp_concepts, struct_concepts)
-		# return concepts divided into 'nlp' and 'struct' sections (used for debugging, evaluation, and other applications)
+			nlp_concepts = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr, raw, debug)
+			if raw:  # keep 'nlp' concepts for debugging purposes
+				concepts[rid] = nlp_concepts
+			else:  # merge 'nlp' and 'struct' concepts
+				# link and store 'struct' concepts
+				struct_concepts = self.lookup_snomed_codes(
+					utils.sanitize_codes(rdata['diagnosis_struct']) +
+					utils.sanitize_codes(rdata['procedure']) +
+					utils.sanitize_codes(rdata['topography']), use_case_ontology)
+				concepts[rid] = onto_proc.merge_nlp_and_struct(nlp_concepts, struct_concepts)
+		# return concepts
 		return concepts
 
 	# RADBOUD SPECIFIC FUNCTIONS
 
-	def radboud_entity_linking(self, reports, use_case_ontology, labels, use_case, sim_thr=0.7):
+	def radboud_entity_linking(self, reports, use_case_ontology, labels, use_case, sim_thr=0.7, raw=False, debug=False):
 		"""
 		Perform entity linking over translated and processed Radboud reports
 
@@ -1163,6 +1173,8 @@ class NERD(object):
 			labels (list(spacy.tokens.doc.Doc)): list of processed ontology concepts
 			use_case (str): the use_case considered - i.e. colon, lung, cervix, or celiac
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
+			raw (bool): whether to return concepts within semantic areas or mentions+concepts
+			debug (bool): whether to keep flags for debugging
 
 		Returns: a dict containing the linked concepts for each report w/ list of associated slides
 		"""
@@ -1174,7 +1186,7 @@ class NERD(object):
 			# extract entity mentions from conclusions
 			mentions = self.extract_entity_mentions(utils.en_sanitize_record(rdata['diagnosis'], use_case))
 			# link and store concepts from conclusions
-			nlp_concepts = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr)
+			nlp_concepts = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr, raw, debug)
 			# assign conclusion concepts to concepts dict
 			concepts[rid]['concepts'] = nlp_concepts
 			# assign slide ids to concepts dict if present
@@ -1185,7 +1197,7 @@ class NERD(object):
 
 	# GENERAL-PURPOSE FUNCTIONS
 
-	def entity_linking(self, reports, use_case_ontology, labels, use_case, sim_thr=0.7, raw=False):
+	def entity_linking(self, reports, use_case_ontology, labels, use_case, sim_thr=0.7, raw=False, debug=False):
 		"""
 		Perform entity linking over translated and processed reports
 
@@ -1196,6 +1208,7 @@ class NERD(object):
 			use_case (str): the use_case considered - i.e. colon, lung, cervix, or celiac
 			sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
 			raw (bool): whether to return concepts within semantic areas or mentions+concepts
+			debug (bool): whether to keep flags for debugging
 
 		Returns: a dict containing the linked concepts for each report
 		"""
@@ -1207,7 +1220,7 @@ class NERD(object):
 			# extract entity mentions from text
 			mentions = self.extract_entity_mentions(utils.en_sanitize_record(rdata['text'], use_case))
 			# link and store concepts from text
-			concepts[rid] = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr, raw)
+			concepts[rid] = self.link_mentions_to_concepts(mentions, labels, use_case_ontology, sim_thr, raw, debug)
 
 		# return concepts divided per diagnosis
 		return concepts
