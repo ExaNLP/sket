@@ -2,6 +2,7 @@ import pandas as pd
 import math
 import string
 import re
+import json
 import uuid
 import copy
 import roman
@@ -16,18 +17,24 @@ from ..utils import utils
 
 class ReportProc(object):
 
-	def __init__(self, src_lang, use_case):
+	def __init__(self, src_lang, use_case, fields_path=None):
 		"""
 		Set translator and build regular expression to split text based on bullets
 
 		Params:
 			src_lang (str): considered source language
 			use_case (str): considered use case
+			fields_path (str): report fields file path
 
 		Returns: None
 		"""
 
 		self.use_case = use_case
+
+		if fields_path:  # read report fields file
+			self.fields = utils.read_report_fields(fields_path)
+		else:  # no report fields file provided
+			self.fields = utils.read_report_fields('./sket/rep_proc/rules/report_fields.txt')
 
 		if src_lang != 'en':  # set NMT model
 			self.nmt_name = 'Helsinki-NLP/opus-mt-' + src_lang + '-en'
@@ -77,6 +84,18 @@ class ReportProc(object):
 			self.tokenizer = None
 			self.nmt = None
 
+	def update_report_fields(self, fields_path):
+		"""
+		Update report fields changing current ones
+
+		Params:
+			fields_path (str): report fields file
+
+		Returns: None
+		"""
+
+		self.fields = utils.read_report_fields(fields_path)
+
 	def load_dataset(self, reports_path, sheet, header): 
 		"""
 		Load reports dataset
@@ -86,18 +105,21 @@ class ReportProc(object):
 			sheet (str): name of the excel sheet to use 
 			header (int): row index used as header
 		
-		Returns: the loaded datasrt
+		Returns: the loaded dataset
 		"""
 
 		if reports_path.split('.')[-1] == 'xlsx':  # requires openpyxl engine
 			dataset = pd.read_excel(io=reports_path, sheet_name=sheet, header=header, engine='openpyxl')
 		else:
 			dataset = pd.read_excel(io=reports_path, sheet_name=sheet, header=header)
+		# remove rows w/ na
+		dataset.dropna(axis=0, how='all', inplace=True)
+
 		return dataset
 
 	def translate_text(self, text):
 		"""
-		Translate text from source to destination
+		Translate text from source to destination -- text is lower-cased before and after translation
 
 		Params:
 			text (str): target text
@@ -106,11 +128,11 @@ class ReportProc(object):
 		"""
 
 		if type(text) == str:
-			trans_text = self.nmt.generate(**self.tokenizer(text, return_tensors="pt", padding=True))[0]
+			trans_text = self.nmt.generate(**self.tokenizer(text.lower(), return_tensors="pt", padding=True))[0]
 			trans_text = self.tokenizer.decode(trans_text, skip_special_tokens=True)
 		else:
 			trans_text = ''
-		return trans_text
+		return trans_text.lower()
 
 	# AOEC SPECIFIC FUNCTIONS
 
@@ -128,7 +150,7 @@ class ReportProc(object):
 		print('acquire data')
 		# acquire data and translate text
 		for report in tqdm(dataset.itertuples()):
-			reports[report._1] = {
+			reports[str(report._1).strip()] = {
 				'diagnosis_nlp': report.Diagnosi,
 				'materials': report.Materiali,
 				'procedure': report.Procedura if type(report.Procedura) == str else '',
@@ -139,13 +161,14 @@ class ReportProc(object):
 			}
 		return reports
 
-	def aoec_split_diagnoses(self, diagnoses, int_id):
+	def aoec_split_diagnoses(self, diagnoses, int_id, debug=False):
 		"""
 		Split the section 'diagnoses' within AOEC reports relying on bullets (i.e. '1', '2', etc.)
 
 		Params:
 			diagnoses (str): the 'diagnoses' section of AOEC reports
 			int_id (int): the internal id specifying the current diagnosis
+			debug (bool): whether to keep flags for debugging
 
 		Returns: the part of the 'diagnoses' section related to the current internalid
 		"""
@@ -183,18 +206,20 @@ class ReportProc(object):
 		elif not current_iids:  # no bullet found -- return the whole diagnoses field (w/o \n to avoid problems w/ FastText)
 			return diagnoses.replace('\n', ' ')
 		else:  # return the whole diagnoses field (w/o \n to avoid problems w/ FastText) -- something went wrong
-			print('\n\nSomething went wrong -- return the whole diagnoses field but print data:')
-			print('Internal ID: {}'.format(int_id))
-			print('Raw Field: {}'.format(diagnoses))
-			print('Processed Field: {}\n\n'.format(dgnss))
+			if debug:
+				print('\n\nSomething went wrong -- return the whole diagnoses field but print data:')
+				print('Internal ID: {}'.format(int_id))
+				print('Raw Field: {}'.format(diagnoses))
+				print('Processed Field: {}\n\n'.format(dgnss))
 			return diagnoses.replace('\n', ' ')
 
-	def aoec_process_data_v2(self, dataset):
+	def aoec_process_data_v2(self, dataset, debug=False):
 		"""
 		Read AOEC reports and extract the required fields (v2 used for batches from 2nd onwards)
 
 		Params:
 			dataset (pandas DataFrame): target dataset
+			debug (bool): whether to keep flags for debugging
 
 		Returns: a dict containing the required report fields
 		"""
@@ -203,9 +228,9 @@ class ReportProc(object):
 		print('acquire data and split it based on diagnoses')
 		# acquire data and split it based on diagnoses
 		for report in tqdm(dataset.itertuples()):
-			rid = report.FILENAME + '_' + str(report.IDINTERNO)
+			rid = str(report.FILENAME).strip() + '_' + str(report.IDINTERNO).strip()
 			reports[rid] = {
-				'diagnosis_nlp': self.aoec_split_diagnoses(report.TESTODIAGNOSI, report.IDINTERNO),
+				'diagnosis_nlp': self.aoec_split_diagnoses(report.TESTODIAGNOSI, report.IDINTERNO, debug=debug),
 				'materials': report.MATERIALE,
 				'procedure': report.SNOMEDPROCEDURA if type(report.SNOMEDPROCEDURA) == str else '',
 				'topography': report.SNOMEDTOPOGRAFIA if type(report.SNOMEDTOPOGRAFIA) == str else '',
@@ -216,11 +241,6 @@ class ReportProc(object):
 				'image': report.FILENAME,
 				'internalid': report.IDINTERNO
 			}
-
-		# print('split data based on diagnoses')
-		# split data based on diagnoses
-		# for rid, report in tqdm(reports.items()):
-			# reports[rid]['diagnosis_nlp'] = self.aoec_split_diagnoses(report['diagnoses'], report['internalid'])
 
 		return reports
 
@@ -275,12 +295,14 @@ class ReportProc(object):
 			sections['whole'] = conclusions
 			return sections
 
-	def radboud_process_data(self, dataset):  # @smarchesin TODO: once testing is finished, remove unsplitted_ and misplitted_reports
+	def radboud_process_data(self, dataset, debug=False):
 		"""
 		Read Radboud reports and extract the required fields
 
 		Params:
 			dataset (pandas DataFrame): target dataset
+			debug (bool): whether to keep flags for debugging
+
 
 		Returns: a dict containing the required report fields
 		"""
@@ -289,12 +311,12 @@ class ReportProc(object):
 		skipped_reports = []
 		unsplitted_reports = 0
 		misplitted_reports = 0
-		report_conc_keys = {report.Studynumber: report._2 for report in dataset.itertuples()}
+		report_conc_keys = {report.Studynumber: report.Conclusion for report in dataset.itertuples()}
 		for report in tqdm(dataset.itertuples()):
-			rid = report.Studynumber
-			if type(report._2) == str:  # split conclusions and associate to each block the corresponding conclusion
+			rid = str(report.Studynumber).strip()
+			if type(report.Conclusion) == str:  # split conclusions and associate to each block the corresponding conclusion
 				# deepcopy rdata to avoid removing elements from input reports
-				raw_conclusions = report._2
+				raw_conclusions = report.Conclusion
 				# split conclusions into sections
 				conclusions = self.radboud_split_conclusions(utils.nl_sanitize_record(raw_conclusions.lower(), self.use_case))
 				pid = '_'.join(rid.split('_')[:-1])  # remove block and slide ids from report id - keep patient id
@@ -458,10 +480,11 @@ class ReportProc(object):
 											else:  # slide ID available
 												slide_ids.append(sid.split('-')[0][-2:] + '-' + sid.split('-')[1])
 								proc_reports[block_ix2id[block_ix]]['slide_ids'] = slide_ids
-		print('number of misplitted reports: {}'.format(misplitted_reports))
-		print('number of unsplitted reports: {}'.format(unsplitted_reports))
-		print('skipped reports:')
-		print(skipped_reports)
+		if debug:
+			print('number of missplitted reports: {}'.format(misplitted_reports))
+			print('number of unsplitted reports: {}'.format(unsplitted_reports))
+			print('skipped reports:')
+			print(skipped_reports)
 		return proc_reports
 
 	def radboud_process_data_v2(self, dataset):
@@ -476,10 +499,13 @@ class ReportProc(object):
 
 		proc_reports = dict()
 		for report in tqdm(dataset.itertuples()):
-			rid = str(report._3) + '_A'  # @smarchesin TODO: can we assume 'A' stands for anonymized report?
+			if 'Microscopy' in report._fields:  # first batch of Radboud reports
+				rid = str(report.Studynumber).strip()
+			else:  # subsequent anonymized batches of Radboud reports
+				rid = str(report._3).strip() + '_A'  # '_A' stands for anonymized report
 			if report.Conclusion:  # split conclusions and associate to each block the corresponding conclusion
 				# split conclusions into sections
-				conclusions = self.radboud_split_conclusions(utils.nl_sanitize_record(report.conclusion.lower(), self.use_case))
+				conclusions = self.radboud_split_conclusions(utils.nl_sanitize_record(report.Conclusion.lower(), self.use_case))
 
 				if 'whole' in conclusions:  # unable to split conclusions - either single conclusion or not appropriately specified
 					# create block id
@@ -520,23 +546,113 @@ class ReportProc(object):
 
 	# GENERAL-PURPOSE FUNCTIONS
 
-	def process_data(self, dataset):
+	def read_xls_reports(self, dataset):
+		"""
+		Read reports from xls file
+
+		Params:
+			dataset (str): target dataset
+
+		Returns: a list containing dataset report(s)
+		"""
+
+		if dataset.split('.')[-1] == 'xlsx':  # read input file as xlsx object
+			ds = pd.read_excel(io=dataset, header=0, engine='openpyxl')
+		else:  # read input file as xls object
+			ds = pd.read_excel(io=dataset, header=0)
+
+		reports = []
+		for report in tqdm(ds.itertuples(index=False)):  # convert raw dataset into list containing report(s)
+			reports.append({field: report[ix] for ix, field in enumerate(report._fields)})
+		# return report(s)
+		return reports
+
+	def read_json_reports(self, dataset):
+		"""
+		Read reports from JSON file
+
+		Params:
+			dataset (str): target dataset
+
+		Returns: a list containing dataset report(s)
+		"""
+
+		with open(dataset, 'r') as dsf:
+			ds = json.load(dsf)
+
+		if 'reports' in ds:  # dataset consists of several reports
+			reports = ds['reports']
+		else:  # dataset consists of single report
+			reports = [ds]
+		# return report(s)
+		return reports
+
+	def read_stream_reports(self, dataset):
+		"""
+		Read reports from stream input
+
+		Params:
+			dataset (dict): target dataset
+
+		Returns: a list containing dataset report(s)
+		"""
+
+		if 'reports' in dataset:  # dataset consists of several reports
+			reports = dataset['reports']
+		else:  # dataset consists of single report
+			reports = [dataset]
+		# return report(s)
+		return reports
+
+	def process_data(self, dataset, debug=False):
 		"""
 		Read reports and extract the required fields
 
 		Params:
 			dataset (dict): target dataset
+			debug (bool): whether to keep flags for debugging
 
 		Returns: a dict containing the required report fields
 		"""
 
+		if type(dataset) == str:  # dataset passed as input file
+			if dataset.split('.')[-1] == 'json':  # read input file as JSON object
+				reports = self.read_json_reports(dataset)
+			elif dataset.split('.')[-1] == 'xlsx' or dataset.split('.')[-1] == 'xls':  # read input file as xlsx or xls object
+				reports = self.read_xls_reports(dataset)
+			else:  # raise exception
+				print('Format required for input: JSON, xls, or xlsx.')
+				raise Exception
+		else:  # dataset passed as stream dict
+			reports = self.read_stream_reports(dataset)
+
 		proc_reports = {}
-		for report in dataset['reports']:
+		# process reports and concat fields
+		for report in reports:
 			if 'id' in report:
 				rid = report.pop('id')  # use provided id
 			else:
 				rid = str(uuid.uuid4())  # generate uuid
-			proc_reports[rid] = report
+
+			if 'age' in report:  # get age from report
+				age = report.pop('age')
+			else:  # set age to None
+				age = None
+
+			if 'gender' in report:  # get gender from report
+				gender = report.pop('gender')
+			else:  # set gender to None
+				gender = None
+
+			if self.fields:  # report fields specified -- restrict to self.fields
+				fields = [field for field in report.keys() if field in self.fields]
+			else:  # report fields not specified -- keep report fields
+				fields = [field for field in report.keys()]
+			report_fields = [report[field] if report[field].endswith('.') else report[field] + '.' for field in fields]
+			text = ' '.join(report_fields)
+
+			# prepare processed report
+			proc_reports[rid] = {'text': text, 'age': age, 'gender': gender}
 		return proc_reports
 
 	def translate_reports(self, reports):
