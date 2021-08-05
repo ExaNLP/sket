@@ -29,11 +29,11 @@ Users can go into the ```datasets``` folder and place their datasets within the 
 
 Datasets can be provided in two formats:
 
-# XLS Format
+### XLS Format
 
 Users can provide ```.xls``` or ```.xlsx``` files with the first row consisting of column headers and the rest of data inputs. 
 
-# JSON Format
+### JSON Format
 
 Users can provide ```.json``` files structured in two ways: <br />
 
@@ -49,5 +49,5 @@ As a dict containing a single key-value report.
 {k: v, ...}
 ```
 
-
 Users can provide <i>special</i> headers that are treated differently from regular text by SKET. These fields are:
+```id```: when specified, the ```id``` field is used to identify the corresponding report. Otherwise, ```uuid``` is used.
