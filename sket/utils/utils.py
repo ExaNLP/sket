@@ -87,6 +87,7 @@ def en_sanitize_record(record, use_case):  # @smarchesin TODO: define sanitize u
 			record = record.replace('iii cin', 'cin3')
 			record = record.replace('ii cin', 'cin2')
 			record = record.replace('i cin', 'cin1')
+			record = record.replace('port biopsy', 'portio biopsy')
 	return record
 
 
@@ -255,7 +256,22 @@ def read_hierarchies(hrels):
 	return [rel.strip() for rel in rels]
 
 
-def store_concepts(concepts, out_path, indent=4, sort_keys=True):
+def read_report_fields(rfields):
+	"""
+	Read considered report fields stored within file
+
+	Params:
+		rfields (str): report fields file path
+
+	Returns: the list of report fields
+	"""
+
+	with open(rfields, 'r') as f:
+		fields = f.readlines()
+	return [field.strip() for field in fields]
+
+
+def store_concepts(concepts, out_path, indent=4, sort_keys=False):
 	"""
 	Store report concepts 
 
@@ -290,7 +306,7 @@ def load_concepts(concept_fpath):
 	return concepts
 
 
-def store_labels(labels, out_path, indent=4, sort_keys=True):
+def store_labels(labels, out_path, indent=4, sort_keys=False):
 	"""
 	Store report labels 
 
