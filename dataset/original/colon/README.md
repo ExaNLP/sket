@@ -1,3 +1,3 @@
 # Colon datasets
 
-Put here datasets containing colon pathology reports.
+Put here datasets containing Colon Cancer pathology reports.
