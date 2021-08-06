@@ -1,7 +1,7 @@
 # SKET
 This repository contains the source code for the Semantic Knowledge Extractor Tool (SKET). <br /> SKET is an unsupervised hybrid knowledge extraction system that combines a rule-based expert system with pre-trained machine learning models to extract cancer-related information from pathology reports.
 
-## Usage 
+## Installation 
 
 Clone this repository
 
@@ -73,7 +73,7 @@ SKET can be deployed with different pretrained models, i.e., fastText and BERT. 
 Users can pass different pretrained models depending on their preferences. 
 
 
-## Deployment
+## Usage
   
 Users can deploy SKET using ```run_med_sket.py```. We release within ```./examples``` three sample datasets that can be used as toy examples to play with SKET. SKET can be deployed with different configurations and using different combinations of matching models. 
 
