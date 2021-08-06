@@ -55,3 +55,7 @@ Users can provide <i>special</i> headers that are treated differently from regul
 ```id```: when specified, the ```id``` field is used to identify the corresponding report. Otherwise, ```uuid``` is used.
 ```gender```: when specified, the ```gender``` field is used to provide patient's information within RDF graphs. Otherwise, ```gender``` is set to None.
 ```age```: when specified, the ```age``` field is used to provide patient's information within RDF graphs. Otherwise, ```age``` is set to None.
+
+## Dataset Statistics
+
+Users can compute dataset statistics to understand 
