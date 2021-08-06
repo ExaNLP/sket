@@ -58,4 +58,19 @@ Users can provide <i>special</i> headers that are treated differently from regul
 
 ## Dataset Statistics
 
-Users can compute dataset statistics to understand 
+Users can compute dataset statistics to uderstand the distribution of concepts extracted by SKET for each use case. For instance, if a user wants to compute statistics for Colon Cancer, they can run 
+
+```bash
+python compute_stats.py --outputs ./outputs/concepts/refined/colon/*.json --use_case colon
+```
+
+## Pretrain
+
+SKET can be deployed with different pretrained models, i.e., fastText and BERT. In our experiments, we employed the BioWordVec fastText model and the Bio + Clinical BERT model. <br \>
+<b>BioWordVec<\b> can be downloaded from https://ftp.ncbi.nlm.nih.gov/pub/lu/Suppl/BioSentVec/BioWordVec_PubMed_MIMICIII_d200.bin <br \>
+<b>Bio + Clinical BERT<\b> model can be automatically downloaded at run time by setting the ```biobert``` SKET parameter equal to 'emilyalsentzer/Bio_ClinicalBERT'
+
+Users can pass different pretrained models depending on their preferences. 
+  
+## Deployment
+  
