@@ -4,9 +4,8 @@ import argparse
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--outputs', default='./outputs/concepts/refined/aoec/lung/*.json', type=str, help='SKET results file.')
-parser.add_argument('--use_case', default='lung', choices=['colon', 'cervix', 'lung'], help='Considered use-case.')
-parser.add_argument('--hospital', default='aoec', choices=['aoec', 'radboud'], help='Considered hospital.')
+parser.add_argument('--outputs', default='./outputs/concepts/refined/colon/*.json', type=str, help='SKET results file.')
+parser.add_argument('--use_case', default='colon', choices=['colon', 'cervix', 'lung'], help='Considered use-case.')
 args = parser.parse_args()
 
 
