@@ -31,7 +31,7 @@ Datasets can be provided in two formats:
 
 ### XLS Format
 
-Users can provide ```.xls``` or ```.xlsx``` files with the first row consisting of column headers and the rest of data inputs. 
+Users can provide ```.xls``` or ```.xlsx``` files with the first row consisting of column headers (i.e., fields) and the rest of data inputs. 
 
 ### JSON Format
 
@@ -48,6 +48,8 @@ As a dict containing a single key-value report.
 ```bash
 {k: v, ...}
 ```
+
+SKET concatenates data from all the fields before translation. Users can alterate this behavior by filling ```./sket/rep_proc/rules/report_fields.txt``` with target fields, one per line. Users can also provide a custom file to SKET, as long as it contains one field per line (more on this below).
 
 Users can provide <i>special</i> headers that are treated differently from regular text by SKET. These fields are: <br />
 ```id```: when specified, the ```id``` field is used to identify the corresponding report. Otherwise, ```uuid``` is used.
