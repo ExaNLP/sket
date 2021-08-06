@@ -85,5 +85,20 @@ The available matching models, in form of SKET parameters, are: <br />
 ```biobert```: the BERT model. Set this parameter to ```bert-name``` to use BERT (see https://huggingface.co/transformers/pretrained_models.html for model IDs). <br />
 ```str_match```: the Gestalt Pattern Matching (GPM) model. Set this parameter to ```True``` to use GPM.
 
-When using BERT models, users can also set ```gpu``` parameter to the corresponding GPU number to fasten SKET execution.
+When using BERT, users can also set ```gpu``` parameter to the corresponding GPU number to fasten SKET execution.
 
+For instance, a user can run the following script to obtain concepts, labels, and RDF graphs on the test.xlsx sample dataset:
+
+```bash
+python run_med_sket.py \
+  	--src_lang it \
+    --use_case colon \
+    --spacy_model en_core_sci_sm \
+    --w2v_model True \
+    --string_model True \
+    --thr 2.0 \
+    --store True \
+    --dataset ./examples/test.xlsx
+```
+
+In this case, we set the ```src_lang``` to ```it``` as the source language of reports is Italian. Therefore, SKET needs to translate reports from Italian to English before performing information extraction.
