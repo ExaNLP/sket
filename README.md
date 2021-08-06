@@ -66,20 +66,20 @@ python compute_stats.py --outputs ./outputs/concepts/refined/colon/*.json --use_
 
 ## Pretrain
 
-SKET can be deployed with different pretrained models, i.e., fastText and BERT. In our experiments, we employed the BioWordVec fastText model and the Bio + Clinical BERT model. <br \>
-<b>BioWordVec<\b> can be downloaded from https://ftp.ncbi.nlm.nih.gov/pub/lu/Suppl/BioSentVec/BioWordVec_PubMed_MIMICIII_d200.bin <br \>
-<b>Bio + Clinical BERT<\b> model can be automatically downloaded at run time by setting the ```biobert``` SKET parameter equal to 'emilyalsentzer/Bio_ClinicalBERT'
+SKET can be deployed with different pretrained models, i.e., fastText and BERT. In our experiments, we employed the BioWordVec fastText model and the Bio + Clinical BERT model. <br />
+<b>BioWordVec</b> can be downloaded from https://ftp.ncbi.nlm.nih.gov/pub/lu/Suppl/BioSentVec/BioWordVec_PubMed_MIMICIII_d200.bin <br />
+<b>Bio + Clinical BERT</b> model can be automatically downloaded at run time by setting the ```biobert``` SKET parameter equal to 'emilyalsentzer/Bio_ClinicalBERT'
 
 Users can pass different pretrained models depending on their preferences. 
 
 
 ## Deployment
   
-Users can deploy SKET using ```run_med_sket.py```. We release within ```./examples``` three sample datasets that can be used as toy examples to play with SKET. SKET can be deployed with different configurations and using different combinations of matching models. Furthermore, SKET exhibits a tunable ```threshold``` parameter that can be tuned to decide the hardness of the entity linking component. The higher the ```threshold```, the more precise the model -- at the expense of recall -- and vice versa. Users can fine-tune this parameter to obtain the desired trade-off between precision and recall. Note that ```threshold``` must always be lower than or equal to the number of considered matching models. Otherwise, the entity linking component does not return any concept. <br \>
-The available matching models, in form of SKET parameters, are: <br \>
-```biow2v```: the scispacy pretrained word embeddings. Set this parameter to ```True``` to use them. <br \>
-```biofast```: the fastText model. Set this parameter to ```/path/to/fastText/file``` to use fastText. <br \>
-```biobert```: the BERT model. Set this parameter to ```bert-name``` to use BERT (see https://huggingface.co/transformers/pretrained_models.html for model IDs). <br \>
+Users can deploy SKET using ```run_med_sket.py```. We release within ```./examples``` three sample datasets that can be used as toy examples to play with SKET. SKET can be deployed with different configurations and using different combinations of matching models. Furthermore, SKET exhibits a tunable ```threshold``` parameter that can be tuned to decide the hardness of the entity linking component. The higher the ```threshold```, the more precise the model -- at the expense of recall -- and vice versa. Users can fine-tune this parameter to obtain the desired trade-off between precision and recall. Note that ```threshold``` must always be lower than or equal to the number of considered matching models. Otherwise, the entity linking component does not return any concept. <br />
+The available matching models, in form of SKET parameters, are: <br />
+```biow2v```: the scispacy pretrained word embeddings. Set this parameter to ```True``` to use them. <br />
+```biofast```: the fastText model. Set this parameter to ```/path/to/fastText/file``` to use fastText. <br />
+```biobert```: the BERT model. Set this parameter to ```bert-name``` to use BERT (see https://huggingface.co/transformers/pretrained_models.html for model IDs). <br />
 ```str_match```: the Gestalt Pattern Matching (GPM) model. Set this parameter to ```True``` to use GPM.
 
 When using BERT models, users can also set ```gpu``` parameter to the corresponding GPU number to fasten SKET execution.
