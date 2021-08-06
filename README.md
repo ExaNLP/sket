@@ -75,7 +75,10 @@ Users can pass different pretrained models depending on their preferences.
 
 ## Deployment
   
-Users can deploy SKET using ```run_med_sket.py```. We release within ```./examples``` three sample datasets that can be used as toy examples to play with SKET. SKET can be deployed with different configurations and using different combinations of matching models. Furthermore, SKET exhibits a tunable ```threshold``` parameter that can be tuned to decide the hardness of the entity linking component. The higher the ```threshold```, the more precise the model -- at the expense of recall -- and vice versa. Users can fine-tune this parameter to obtain the desired trade-off between precision and recall. Note that ```threshold``` must always be lower than or equal to the number of considered matching models. Otherwise, the entity linking component does not return any concept. <br />
+Users can deploy SKET using ```run_med_sket.py```. We release within ```./examples``` three sample datasets that can be used as toy examples to play with SKET. SKET can be deployed with different configurations and using different combinations of matching models. 
+
+Furthermore, SKET exhibits a tunable ```threshold``` parameter that can be tuned to decide the hardness of the entity linking component. The higher the ```threshold```, the more precise the model -- at the expense of recall -- and vice versa. Users can fine-tune this parameter to obtain the desired trade-off between precision and recall. Note that ```threshold``` must always be lower than or equal to the number of considered matching models. Otherwise, the entity linking component does not return any concept.
+
 The available matching models, in form of SKET parameters, are: <br />
 ```biow2v```: the scispacy pretrained word embeddings. Set this parameter to ```True``` to use them. <br />
 ```biofast```: the fastText model. Set this parameter to ```/path/to/fastText/file``` to use fastText. <br />
