@@ -268,7 +268,7 @@ def read_report_fields(rfields):
 
 	with open(rfields, 'r') as f:
 		fields = f.readlines()
-	return [field.strip() for field in fields]
+	return [field.strip() for field in fields if field]
 
 
 def store_concepts(concepts, out_path, indent=4, sort_keys=False):
