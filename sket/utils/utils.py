@@ -267,7 +267,7 @@ def read_report_fields(rfields):
 	"""
 
 	with open(rfields, 'r') as f:
-		fields = f.readlines()
+		fields = f.read().splitlines()
 	return [field.strip() for field in fields if field]
 
 
