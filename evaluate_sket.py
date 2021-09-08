@@ -12,9 +12,8 @@ parser.add_argument('--gt', default='./ground_truth/lung/aoec/lung_labels_allDS.
 parser.add_argument('--outputs', default='./outputs/labels/aoec/lung/*.json', type=str, help='SKET results file.')
 parser.add_argument('--use_case', default='lung', choices=['colon', 'cervix', 'lung'], help='Considered use-case.')
 parser.add_argument('--hospital', default='aoec', choices=['aoec', 'radboud'], help='Considered hospital.')
-parser.add_argument('--debug', default=True, type=bool, help='Whether to use evaluation for debugging purposes.')
+parser.add_argument('--debug', default=False, action='store_true', help='Whether to use evaluation for debugging purposes.')
 args = parser.parse_args()
-
 
 label2class = {
     'cervix': {
