@@ -96,10 +96,10 @@ python run_med_sket.py \
   	--src_lang it \
     --use_case colon \
     --spacy_model en_core_sci_sm \
-    --w2v_model True \
-    --string_model True \
+    --w2v_model \
+    --string_model \
     --thr 2.0 \
-    --store True \
+    --store \
     --dataset ./examples/test.xlsx
 ```
 
