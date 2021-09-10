@@ -142,14 +142,14 @@ Instructions on how to build and run sket images are reported below, if you alre
     5a) <b>SKET CPU-only</b>: 
     ```bash <br />
     docker run --rm -v /full/path/to/sket/outputs:/sket/outputs sket_cpu 
-          --src_lang it  
-          --use_case colon  
-          --spacy_model en_core_sci_sm  
-          --w2v_model  
-          --string_model  
-          --thr 2.0  
-          --store  
-          --dataset ./examples/test.xlsx 
+           --src_lang it  
+           --use_case colon  
+           --spacy_model en_core_sci_sm  
+           --w2v_model  
+           --string_model  
+           --thr 2.0  
+           --store  
+           --dataset ./examples/test.xlsx 
     ``` 
     where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
     
