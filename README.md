@@ -151,7 +151,7 @@ Instructions on how to build and run sket images are reported below, if you alre
           --store \ 
           --dataset ./examples/test.xlsx 
     ``` 
-    where ```/full/path/to``` refers to the full path required to get to the ```sket``` folder.
+    where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
     
     5b) <b>SKET GPU-enabled</b>:
     ```bash <br />
@@ -167,6 +167,6 @@ Instructions on how to build and run sket images are reported below, if you alre
            --store \ 
            --dataset ./examples/test.xlsx 
      ```
-     where ```/full/path/to``` refers to the full path required to get to the ```sket``` folder.
+     where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
 
 Regarding SKET GPU-enabled, the corresponding Dockerfile contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
