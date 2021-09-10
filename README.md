@@ -126,25 +126,25 @@ Instructions on how to build and run sket images are reported below, if you alre
     5a) SKET CPU-only: 
     ```bash <br />
     docker run --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_cpu \
-          --src_lang it \ <br />
-          --use_case colon \ <br />
-          --spacy_model en_core_sci_sm \ <br />
-          --w2v_model \ <br />
-          --string_model \ <br />
-          --thr 2.0 \ <br />
-          --store \ <br />
-          --dataset ./examples/test.xlsx <br />
+          --src_lang it \ 
+          --use_case colon \ 
+          --spacy_model en_core_sci_sm \ 
+          --w2v_model \ 
+          --string_model \ 
+          --thr 2.0 \ 
+          --store \ 
+          --dataset ./examples/test.xlsx 
     ``` 
     
     5b) SKET GPU-enabled:
     ```bash <br />
     docker run --gpus all --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_gpu \
-           --src_lang it \ <br />
-           --use_case colon \ <br />
-           --spacy_model en_core_sci_sm \ <br />
-           --w2v_model \ <br />
-           --string_model \ <br />
-           --thr 2.0 \ <br />
-           --store \ <br />
-           --dataset ./examples/test.xlsx <br />
+           --src_lang it \ 
+           --use_case colon \ 
+           --spacy_model en_core_sci_sm \ 
+           --w2v_model \ 
+           --string_model \ 
+           --thr 2.0 \ 
+           --store \ 
+           --dataset ./examples/test.xlsx 
      ```
