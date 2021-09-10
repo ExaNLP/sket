@@ -1,2 +1,2 @@
-# ignore outputs when building image
+# ignore outputs (i.e., volume) when building image
 outputs
