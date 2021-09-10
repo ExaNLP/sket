@@ -19,5 +19,3 @@ RUN pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.3
 COPY . /sket
 # run sket
 ENTRYPOINT ["python3", "./run_med_sket.py"]
-
-
