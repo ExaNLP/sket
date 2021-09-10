@@ -13,7 +13,7 @@ parser.add_argument('--w2v_model', default=False, action='store_true', help='Con
 parser.add_argument('--fasttext_model', default=None, type=str, help='File path for FastText model.')
 parser.add_argument('--bert_model', default=None, type=str, help='Considered BERT model.')
 parser.add_argument('--string_model', default=False, action='store_true', help='Considered string matching model.')
-parser.add_argument('--gpu', default=0, type=int, help='Considered GPU device. If None, use CPU instead.')
+parser.add_argument('--gpu', default=None, type=int, help='Considered GPU device. If not specified (default to None), use CPU instead.')
 parser.add_argument('--thr', default=0.9, type=float, help='Similarity threshold.')
 parser.add_argument('--store', default=False, action='store_true', help='Whether to store concepts, labels, and graphs.')
 parser.add_argument('--raw', default=False, action='store_true', help='Whether to consider full pipeline or not.')
