@@ -133,7 +133,7 @@ Instructions on how to build and run sket images are reported below, if you alre
                               --thr 2.0 \ 
                               --store \
                               --dataset ./examples/test.xlsx
-                       ```
+                       ``` <br />
     5b) SKET GPU-enabled: ```bash
                           docker run --gpus all --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_gpu \
                                  --src_lang it \ 
