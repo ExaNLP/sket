@@ -123,25 +123,27 @@ Instructions on how to build and run sket images are reported below, if you alre
     4b) open the [docker_sket_gpu](https://github.com/ExaNLP/sket/docker_sket_gpu) folder and, on a terminal, type: ```docker build --rm -t sket_gpu .``` <br />
 
 5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
-    5a) SKET CPU-only: ```bash
-                       docker run --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_cpu \
-                              --src_lang it \ 
-                              --use_case colon \ 
-                              --spacy_model en_core_sci_sm \ 
-                              --w2v_model \ 
-                              --string_model \ 
-                              --thr 2.0 \ 
-                              --store \
-                              --dataset ./examples/test.xlsx
-                       ``` <br />
-    5b) SKET GPU-enabled: ```bash
-                          docker run --gpus all --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_gpu \
-                                 --src_lang it \ 
-                                 --use_case colon \ 
-                                 --spacy_model en_core_sci_sm \ 
-                                 --w2v_model \ 
-                                 --string_model \ 
-                                 --thr 2.0 \ 
-                                 --store \
-                                 --dataset ./examples/test.xlsx
-                           ```
+    5a) SKET CPU-only: 
+    ```bash <br />
+    docker run --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_cpu \ <br />
+          --src_lang it \ <br />
+          --use_case colon \ <br />
+          --spacy_model en_core_sci_sm \ <br />
+          --w2v_model \ <br />
+          --string_model \ <br />
+          --thr 2.0 \ <br />
+          --store \ <br />
+          --dataset ./examples/test.xlsx <br />
+    ``` <br />
+    5b) SKET GPU-enabled:
+    ```bash <br />
+    docker run --gpus all --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_gpu \ <br />
+           --src_lang it \ <br />
+           --use_case colon \ <br />
+           --spacy_model en_core_sci_sm \ <br />
+           --w2v_model \ <br />
+           --string_model \ <br />
+           --thr 2.0 \ <br />
+           --store \ <br />
+           --dataset ./examples/test.xlsx <br />
+     ```
