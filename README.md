@@ -104,3 +104,44 @@ python run_med_sket.py \
 ```
 
 In this case, we set the ```src_lang``` to ```it``` as the source language of reports is Italian. Therefore, SKET needs to translate reports from Italian to English before performing information extraction.
+
+## Docker
+
+SKET can also be deployed as a Docker container. Two Docker images can be built: <b>sket_cpu</b> and <b>sket_gpu</b>. The files required to build and run these images can be found within ```sket_cpu``` and ```sket_gpu``` folders, respectively. <br /> 
+For ```sket_gpu```, NVIDIA drivers have to be already installed within the host machine. Users can refer to NVIDIA [user-guide](https://docs.nvidia.com/deeplearning/frameworks/user-guide/#nvcontainers) for more information.
+
+Instructions on how to build and run sket images are reported below, if you already have [docker](https://docs.docker.com/engine/reference/commandline/docker/) installed on your machine, you can skip the first step.
+
+1) Install Docker. In this regard, check out the correct [installation procedure](https://docs.docker.com/get-docker/) for your platform.
+
+2) Check the Docker daemon (i.e., ```dockerd```) is up and running.
+
+3) Download or clone the [sket](https://github.com/ExaNLP/sket) repository.
+
+4) Depending on the Docker image of interest, follow one of the two procedures below: <br />
+    4a) open the [docker_sket_cpu](https://github.com/ExaNLP/sket/docker_sket_cpu) folder and, on a terminal, type: ```docker build --rm -t sket_cpu .``` <br />
+    4b) open the [docker_sket_gpu](https://github.com/ExaNLP/sket/docker_sket_gpu) folder and, on a terminal, type: ```docker build --rm -t sket_gpu .``` <br />
+
+5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
+    5a) SKET CPU-only: ```bash
+                       docker run --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_cpu \
+                              --src_lang it \ 
+                              --use_case colon \ 
+                              --spacy_model en_core_sci_sm \ 
+                              --w2v_model \ 
+                              --string_model \ 
+                              --thr 2.0 \ 
+                              --store \
+                              --dataset ./examples/test.xlsx
+                       ```
+    5b) SKET GPU-enabled: ```bash
+                          docker run --gpus all --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_gpu \
+                                 --src_lang it \ 
+                                 --use_case colon \ 
+                                 --spacy_model en_core_sci_sm \ 
+                                 --w2v_model \ 
+                                 --string_model \ 
+                                 --thr 2.0 \ 
+                                 --store \
+                                 --dataset ./examples/test.xlsx
+                           ```
