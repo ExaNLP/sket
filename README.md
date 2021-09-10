@@ -125,7 +125,7 @@ Instructions on how to build and run sket images are reported below, if you alre
 5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
     5a) SKET CPU-only: 
     ```bash <br />
-    docker run --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_cpu \
+    docker run --rm -v /full/path/to/sket/outputs:/sket/outputs sket_cpu \
           --src_lang it \ 
           --use_case colon \ 
           --spacy_model en_core_sci_sm \ 
@@ -138,7 +138,7 @@ Instructions on how to build and run sket images are reported below, if you alre
     
     5b) SKET GPU-enabled:
     ```bash <br />
-    docker run --gpus all --rm -v /home/ims/Desktop/sket/outputs:/sket/outputs sket_gpu \
+    docker run --gpus all --rm -v /full/path/to/sket/outputs:/sket/outputs sket_gpu \
            --src_lang it \ 
            --use_case colon \ 
            --spacy_model en_core_sci_sm \ 
@@ -148,3 +148,5 @@ Instructions on how to build and run sket images are reported below, if you alre
            --store \ 
            --dataset ./examples/test.xlsx 
      ```
+
+Regarding SKET GPU-enabled, the corresponding Dockerfile contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
