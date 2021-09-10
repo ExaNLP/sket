@@ -151,6 +151,7 @@ Instructions on how to build and run sket images are reported below, if you alre
           --store \ 
           --dataset ./examples/test.xlsx 
     ``` 
+    where ```/full/path/to``` refers to the full path required to get to the ```sket``` folder.
     
     5b) <b>SKET GPU-enabled</b>:
     ```bash <br />
