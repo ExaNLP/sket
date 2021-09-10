@@ -68,7 +68,7 @@ python compute_stats.py --outputs ./outputs/concepts/refined/colon/*.json --use_
 
 ## Pretrain
 
-SKET can be deployed with different pretrained models, i.e., fastText and BERT. In our experiments, we employed the BioWordVec fastText model and the Bio + Clinical BERT model. <br />
+SKET can be deployed with different pretrained models, i.e., fastText and BERT. In our experiments, we employed the [BioWordVec](https://github.com/ncbi-nlp/BioSentVec) fastText model and the [Bio + Clinical BERT model](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT). <br />
 <b>BioWordVec</b> can be downloaded from https://ftp.ncbi.nlm.nih.gov/pub/lu/Suppl/BioSentVec/BioWordVec_PubMed_MIMICIII_d200.bin <br />
 <b>Bio + Clinical BERT</b> model can be automatically downloaded at run time by setting the ```biobert``` SKET parameter equal to 'emilyalsentzer/Bio_ClinicalBERT'
 
