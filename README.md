@@ -141,30 +141,30 @@ Instructions on how to build and run sket images are reported below, if you alre
 5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
     5a) <b>SKET CPU-only</b>: 
     ```bash <br />
-    docker run --rm -v /full/path/to/sket/outputs:/sket/outputs sket_cpu \
-          --src_lang it \ 
-          --use_case colon \ 
-          --spacy_model en_core_sci_sm \ 
-          --w2v_model \ 
-          --string_model \ 
-          --thr 2.0 \ 
-          --store \ 
+    docker run --rm -v /full/path/to/sket/outputs:/sket/outputs sket_cpu 
+          --src_lang it  
+          --use_case colon  
+          --spacy_model en_core_sci_sm  
+          --w2v_model  
+          --string_model  
+          --thr 2.0  
+          --store  
           --dataset ./examples/test.xlsx 
     ``` 
     where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
     
     5b) <b>SKET GPU-enabled</b>:
     ```bash <br />
-    docker run --gpus all --rm -v /full/path/to/sket/outputs:/sket/outputs sket_gpu \
-           --src_lang it \ 
-           --use_case colon \ 
-           --spacy_model en_core_sci_sm \ 
-           --w2v_model \ 
-           --string_model \ 
-           --bert_model emilyalsentzer/Bio_ClinicalBERT \
-           --gpu 0 \
-           --thr 2.5 \ 
-           --store \ 
+    docker run --gpus all --rm -v /full/path/to/sket/outputs:/sket/outputs sket_gpu 
+           --src_lang it 
+           --use_case colon  
+           --spacy_model en_core_sci_sm  
+           --w2v_model  
+           --string_model  
+           --bert_model emilyalsentzer/Bio_ClinicalBERT 
+           --gpu 0 
+           --thr 2.5 
+           --store  
            --dataset ./examples/test.xlsx 
      ```
      where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
