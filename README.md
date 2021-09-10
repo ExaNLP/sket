@@ -112,8 +112,8 @@ python run_med_sket.py
        --spacy_model en_core_sci_sm 
        --w2v_model 
        --string_model 
-       -- bert_model emilyalsentzer/Bio_ClinicalBERT
-       -- gpu 0 
+       --bert_model emilyalsentzer/Bio_ClinicalBERT
+       --gpu 0 
        --thr 2.5 
        --store 
        --dataset ./examples/test.xlsx
@@ -161,8 +161,8 @@ Instructions on how to build and run sket images are reported below, if you alre
            --spacy_model en_core_sci_sm \ 
            --w2v_model \ 
            --string_model \ 
-           -- bert_model emilyalsentzer/Bio_ClinicalBERT \
-           -- gpu 0 \
+           --bert_model emilyalsentzer/Bio_ClinicalBERT \
+           --gpu 0 \
            --thr 2.5 \ 
            --store \ 
            --dataset ./examples/test.xlsx 
