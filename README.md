@@ -103,7 +103,23 @@ python run_med_sket.py \
     --dataset ./examples/test.xlsx
 ```
 
-In this case, we set the ```src_lang``` to ```it``` as the source language of reports is Italian. Therefore, SKET needs to translate reports from Italian to English before performing information extraction.
+or, if a user also wants to use BERT with GPU support, they can run the following script: 
+
+```bash
+python run_med_sket.py \
+  	--src_lang it \
+    --use_case colon \
+    --spacy_model en_core_sci_sm \
+    --w2v_model \
+    --string_model \
+    -- bert_model emilyalsentzer/Bio_ClinicalBERT \
+    -- gpu 0 \ 
+    --thr 2.5 \
+    --store \
+    --dataset ./examples/test.xlsx
+```
+
+In both cases, we set the ```src_lang``` to ```it``` as the source language of reports is Italian. Therefore, SKET needs to translate reports from Italian to English before performing information extraction.
 
 ## Docker
 
@@ -146,7 +162,7 @@ Instructions on how to build and run sket images are reported below, if you alre
            --string_model \ 
            -- bert_model emilyalsentzer/Bio_ClinicalBERT \
            -- gpu 0 \
-           --thr 2.0 \ 
+           --thr 2.5 \ 
            --store \ 
            --dataset ./examples/test.xlsx 
      ```
