@@ -92,30 +92,30 @@ When using BERT, users can also set ```gpu``` parameter to the corresponding GPU
 For instance, a user can run the following script to obtain concepts, labels, and RDF graphs on the test.xlsx sample dataset:
 
 ```bash
-python run_med_sket.py \
-  	   --src_lang it \
-       --use_case colon \
-       --spacy_model en_core_sci_sm \
-       --w2v_model \
-       --string_model \
-       --thr 2.0 \
-       --store \
+python run_med_sket.py 
+       --src_lang it 
+       --use_case colon 
+       --spacy_model en_core_sci_sm 
+       --w2v_model 
+       --string_model 
+       --thr 2.0 
+       --store 
        --dataset ./examples/test.xlsx
 ```
 
 or, if a user also wants to use BERT with GPU support, they can run the following script: 
 
 ```bash
-python run_med_sket.py \
-  	   --src_lang it \
-       --use_case colon \
-       --spacy_model en_core_sci_sm \
-       --w2v_model \
-       --string_model \
-       -- bert_model emilyalsentzer/Bio_ClinicalBERT \
-       -- gpu 0 \ 
-       --thr 2.5 \
-       --store \
+python run_med_sket.py  
+       --src_lang it 
+       --use_case colon 
+       --spacy_model en_core_sci_sm 
+       --w2v_model 
+       --string_model 
+       -- bert_model emilyalsentzer/Bio_ClinicalBERT
+       -- gpu 0 
+       --thr 2.5 
+       --store 
        --dataset ./examples/test.xlsx
 ```
 
