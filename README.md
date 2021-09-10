@@ -107,7 +107,7 @@ In this case, we set the ```src_lang``` to ```it``` as the source language of re
 
 ## Docker
 
-SKET can also be deployed as a Docker container. Two Docker images can be built: <b>sket_cpu</b> and <b>sket_gpu</b>. The files required to build and run these images can be found within ```sket_cpu``` and ```sket_gpu``` folders, respectively. <br /> 
+SKET can also be deployed as a Docker container -- thus avoiding the need to install its dependencies directly on the host machine. Two Docker images can be built: <b>sket_cpu</b> and <b>sket_gpu</b>. The files required to build and run these images can be found within ```sket_cpu``` and ```sket_gpu``` folders, respectively. <br /> 
 For ```sket_gpu```, NVIDIA drivers have to be already installed within the host machine. Users can refer to NVIDIA [user-guide](https://docs.nvidia.com/deeplearning/frameworks/user-guide/#nvcontainers) for more information.
 
 Instructions on how to build and run sket images are reported below, if you already have [docker](https://docs.docker.com/engine/reference/commandline/docker/) installed on your machine, you can skip the first step.
