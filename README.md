@@ -141,7 +141,7 @@ Instructions on how to build and run sket images are reported below, if you alre
 5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
     5a) <b>SKET CPU-only</b>: 
     ```bash <br />
-    docker run --rm -v /full/path/to/sket/outputs:/sket/outputs sket_cpu \
+    docker run --rm -v /full/path/to/sket/outputs:/sket/outputs:z sket_cpu \
           --src_lang it \ 
           --use_case colon \ 
           --spacy_model en_core_sci_sm \ 
@@ -154,7 +154,7 @@ Instructions on how to build and run sket images are reported below, if you alre
     
     5b) <b>SKET GPU-enabled</b>:
     ```bash <br />
-    docker run --gpus all --rm -v /full/path/to/sket/outputs:/sket/outputs sket_gpu \
+    docker run --gpus all --rm -v /full/path/to/sket/outputs:/sket/outputs:z sket_gpu \
            --src_lang it \ 
            --use_case colon \ 
            --spacy_model en_core_sci_sm \ 
