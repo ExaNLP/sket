@@ -3,7 +3,7 @@ This repository contains the source code for the Semantic Knowledge Extractor To
 
 ## Installation 
 
-<b>CAVEAT</b>: the package has been tested using Python 3.7.7 on unix-based systems and win64 systems. There are no guarantees that it works with different configurations.
+<b>CAVEAT</b>: the package has been tested using Python 3.7 and 3.8 on unix-based systems and win64 systems. There are no guarantees that it works with different configurations.
 
 Clone this repository
 
