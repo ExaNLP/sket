@@ -135,8 +135,8 @@ Instructions on how to build and run sket images are reported below, if you alre
 3) Download or clone the [sket](https://github.com/ExaNLP/sket) repository.
 
 4) Depending on the Docker image of interest, follow one of the two procedures below: <br />
-    4a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/) project folder, type: ```docker build --rm -f ./docker_sket_cpu/Dockerfile -t sket_cpu .``` <br />
-    4b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/) project folder, type: ```docker build --rm -f ./docker_sket_gpu/Dockerfile -t sket_gpu .``` <br />
+    4a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/) project folder, type ```docker build --rm -f ./docker_sket_cpu/Dockerfile -t sket_cpu .``` <br />
+    4b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/) project folder, type ```docker build --rm -f ./docker_sket_gpu/Dockerfile -t sket_gpu .``` <br />
 
 5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
     5a) <b>SKET CPU-only</b>: 
