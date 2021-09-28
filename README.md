@@ -130,43 +130,20 @@ Instructions on how to build and run sket images are reported below, if you alre
 
 1) Install Docker. In this regard, check out the correct [installation procedure](https://docs.docker.com/get-docker/) for your platform.
 
-2) Check the Docker daemon (i.e., ```dockerd```) is up and running.
+2) Install docker-compose. In this regard, check the correct [installation procedure](https://docs.docker.com/compose/install/) for your platform.
 
-3) Download or clone the [sket](https://github.com/ExaNLP/sket) repository.
+3) Check the Docker daemon (i.e., ```dockerd```) is up and running.
 
-4) Depending on the Docker image of interest, follow one of the two procedures below: <br />
-    4a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/) project folder, type ```docker build --rm -f ./docker_sket_cpu/Dockerfile -t sket_cpu .``` <br />
-    4b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/) project folder, type ```docker build --rm -f ./docker_sket_gpu/Dockerfile -t sket_gpu .``` <br />
+4) Download or clone the [sket](https://github.com/ExaNLP/sket) repository.
 
-5) Once the corresponding Docker image is built, follow one of the two procedures below, depending on the image, to run ```run_med_sket.py```: <br />
-    5a) <b>SKET CPU-only</b>: 
-    ```bash <br />
-    docker run --rm -v /full/path/to/sket/outputs:/sket/outputs sket_cpu 
-           --src_lang it  
-           --use_case colon  
-           --spacy_model en_core_sci_sm  
-           --w2v_model  
-           --string_model  
-           --thr 2.0  
-           --store  
-           --dataset ./examples/test.xlsx 
-    ``` 
-    where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
+5) In ```sket_server/sket_rest_config``` the ```config.json``` file allows you to configure the sket instance, edit this file in order to set the following parameters: ```w2v_model, fasttext_model, bert_model, string_model, gpu```.
+
+6) Depending on the Docker image of interest, follow one of the two procedures below: <br />
+    5a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_cpu ```<br />
+    5b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_gpu ```<br />
     
-    5b) <b>SKET GPU-enabled</b>:
-    ```bash <br />
-    docker run --gpus all --rm -v /full/path/to/sket/outputs:/sket/outputs sket_gpu 
-           --src_lang it 
-           --use_case colon  
-           --spacy_model en_core_sci_sm  
-           --w2v_model  
-           --string_model  
-           --bert_model emilyalsentzer/Bio_ClinicalBERT 
-           --gpu 0 
-           --thr 2.5 
-           --store  
-           --dataset ./examples/test.xlsx 
-     ```
-     where ```/full/path/to``` refers to the <b>absolute path</b> required to get to the ```sket``` folder.
+7) When the image is ready, the sket server is running at: http://0.0.0.0:8000.
 
-Regarding SKET GPU-enabled, the corresponding Dockerfile contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
+8) If you want to build the entire image again, type: ```docker-compose down --rmi local```
+
+Regarding SKET GPU-enabled, the corresponding Dockerfile (you can find the Dockerfile at the following path: sket_server/docker-sket_server-config/sket_gpu) contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
