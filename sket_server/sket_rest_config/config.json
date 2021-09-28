@@ -1,6 +1,4 @@
 {
-  "use_case":"colon",
-  "language":"en",
   "w2v_model":true,
   "fasttext_model": null,
   "bert_model":null,
