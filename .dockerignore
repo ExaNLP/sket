@@ -1,3 +1,3 @@
-# ignore outputs (i.e., volume) when building image
+# ignore outputs and dataset (i.e., volume) when building image
 outputs
 dataset
