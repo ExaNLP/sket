@@ -1,0 +1,31 @@
+version: "3"
+   
+services:
+  sket_cpu:
+
+    build: 
+      context: .
+      dockerfile: ./docker-sket_server-config/docker_sket_cpu/Dockerfile
+
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    command: bash -c 'python manage.py runserver 0.0.0.0:8000'
+    
+    
+  sket_gpu:
+
+    build: 
+      context: .
+      dockerfile: ./docker-sket_server-config/docker_sket_gpu/Dockerfile
+
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    command: bash -c 'python manage.py runserver 0.0.0.0:8000'
+  
+
+
+
