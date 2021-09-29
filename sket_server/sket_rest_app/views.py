@@ -23,7 +23,7 @@ def annotate(request,use_case = None,language = None,obj = None):
         rdf_graphs = {}
         
         store = True
-        if obj in ['concepts','graph','labels']:
+        if obj in ['concepts','graphs','labels']:
             store = False
 
         if len(request.FILES) > 0:
