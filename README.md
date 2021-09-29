@@ -139,8 +139,8 @@ Instructions on how to build and run sket images are reported below, if you alre
 5) In ```sket_server/sket_rest_config``` the ```config.json``` file allows you to configure the sket instance, edit this file in order to set the following parameters: ```w2v_model, fasttext_model, bert_model, string_model, gpu```.
 
 6) Depending on the Docker image of interest, follow one of the two procedures below: <br />
-    5a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_cpu ```<br />
-    5b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_gpu ```<br />
+    6a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_cpu ```<br />
+    6b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_gpu ```<br />
     
 7) When the image is ready, the sket server is running at: http://0.0.0.0:8000 if you run ```sket_cpu ```. If you run ```sket_gpu ``` the server will run at: http://0.0.0.0:8001.
 
@@ -159,6 +159,6 @@ Instructions on how to build and run sket images are reported below, if you alre
     ```
     where ```path/to/examples``` is the path to examples folder. <br />
 
-9) If you want to build the entire image again, from the project folder type: ```docker-compose down --rmi local```
+9) If you want to build the entire image again, from the project folder type:```docker-compose down --rmi local``` and repeat steps 5-8.
 
 Regarding SKET GPU-enabled, the corresponding Dockerfile (you can find the Dockerfile at the following path: sket_server/docker-sket_server-config/sket_gpu) contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
