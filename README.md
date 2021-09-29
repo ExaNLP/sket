@@ -123,7 +123,7 @@ In both cases, we set the ```src_lang``` to ```it``` as the source language of r
 
 ## Docker
 
-SKET can also be deployed as a Docker container -- thus avoiding the need to install its dependencies directly on the host machine. Two Docker images can be built: <b>sket_cpu</b> and <b>sket_gpu</b>. The files required to build and run these images can be found within ```sket_cpu``` and ```sket_gpu``` folders, respectively. <br /> 
+SKET can also be deployed as a Docker container -- thus avoiding the need to install its dependencies directly on the host machine. Two Docker images can be built: <b>sket_cpu</b> and <b>sket_gpu</b>. <br /> 
 For ```sket_gpu```, NVIDIA drivers have to be already installed within the host machine. Users can refer to NVIDIA [user-guide](https://docs.nvidia.com/deeplearning/frameworks/user-guide/#nvcontainers) for more information.
 
 Instructions on how to build and run sket images are reported below, if you already have [docker](https://docs.docker.com/engine/reference/commandline/docker/) installed on your machine, you can skip the first step.
@@ -144,6 +144,16 @@ Instructions on how to build and run sket images are reported below, if you alre
     
 7) When the image is ready, the sket server is running at: http://0.0.0.0:8000.
 
-8) If you want to build the entire image again, type: ```docker-compose down --rmi local```
+8) The annotation of medical reports can be performed with two types of <b>POST request</b>:<br />
+    8a) If you want to store the annotations in ```outputs``` directory the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>``` where ```use_case``` and ```language``` are the use case and the language of your reports respectively.<br />
+   <br /> Request example: <br />
+    ```curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/en```<br />
+    where ```path/to/examples``` is the path to examples folder.<br /><br />
+    8b) If you want to use the labels, the concepts or the graphs returned by sket without saving them the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/<output>``` where ```use_case``` and ```language``` are the use case and the language of your reports respectively and ```output``` is ```labels``` or ```concepts``` or ```graphs```.<br />
+        <br />Request example: <br />
+    ```curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/en/labels```<br />
+    where ```path/to/examples``` is the path to examples folder. <br />
+
+9) If you want to build the entire image again, from the project folder type: ```docker-compose down --rmi local```
 
 Regarding SKET GPU-enabled, the corresponding Dockerfile (you can find the Dockerfile at the following path: sket_server/docker-sket_server-config/sket_gpu) contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
