@@ -159,6 +159,6 @@ Instructions on how to build and run sket images are reported below, if you alre
     ```
     where ```path/to/examples``` is the path to examples folder. <br />
 
-9) If you want to build the entire image again, from the project folder type:```docker-compose down --rmi local``` and repeat steps 5-8.
+9) If you want to build the entire image again, from the project folder type ```docker-compose down --rmi local``` and repeat steps 5-8.
 
 Regarding SKET GPU-enabled, the corresponding Dockerfile (you can find the Dockerfile at the following path: sket_server/docker-sket_server-config/sket_gpu) contains the ```nvidia/cuda:11.0-devel```. Users are encouraged to change the NVIDIA/CUDA image within the Dockerfile depending on the NVIDIA drivers installed in their host machine. NVIDIA images can be found [here](https://hub.docker.com/r/nvidia/cuda/tags?page=1&ordering=last_updated).
