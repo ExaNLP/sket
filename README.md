@@ -142,7 +142,7 @@ Instructions on how to build and run sket images are reported below, if you alre
     5a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_cpu ```<br />
     5b) <b>SKET GPU-enabled</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_gpu ```<br />
     
-7) When the image is ready, the sket server is running at: http://0.0.0.0:8000.
+7) When the image is ready, the sket server is running at: http://0.0.0.0:8000 if you run ```sket_cpu ```. If you run ```sket_gpu ``` the server will run at: http://0.0.0.0:8001.
 
 8) The annotation of medical reports can be performed with two types of <b>POST request</b>:<br />
     8a) If you want to store the annotations in ```outputs``` directory the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>``` where ```use_case``` and ```language``` are the use case and the language of your reports respectively.<br />
