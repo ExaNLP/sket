@@ -159,7 +159,7 @@ Instructions on how to build and run sket images are reported below, if you alre
     ```
     where ```path/to/examples``` is the path to examples folder. <br />
 
-9) If you want to embed your medical reports in the request, change the application type and set: ```-H "Content-Type: application/json"``` then. instead of ```- F "data=@..."``` put: ```-d '{"reports":[{},...,{}]}'``` if you have multiple reports, or: ```-d '{"k":"v",...}'``` if you have a single report.
+9) If you want to embed your medical reports in the request, change the application type and set: ```-H "Content-Type: application/json"``` then, instead of ```- F "data=@..."``` put: ```-d '{"reports":[{},...,{}]}'``` if you have multiple reports, or: ```-d '{"k":"v",...}'``` if you have a single report.
 
 10) If you want to build the images again, from the project folder type ```docker-compose down --rmi local```, pay attention that this command will remove all the images created (both CPU and GPU). If you want to remove only one image between CPU and GPU see the [docker image documentation](https://docs.docker.com/engine/reference/commandline/image/). Finally repeat steps 5-8. 
 
