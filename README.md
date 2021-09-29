@@ -148,14 +148,14 @@ Instructions on how to build and run sket images are reported below, if you alre
     8a) If you want to store the annotations in ```outputs``` directory the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>``` where ```use_case``` and ```language``` are the use case and the language of your reports respectively.<br />
    <br /> Request example: 
     ```bash
-    curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/en
+    curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it
     ```
     
     where ```path/to/examples``` is the path to examples folder.<br /><br />
     8b) If you want to use the labels, the concepts or the graphs returned by sket without saving them the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/<output>``` where ```use_case``` and ```language``` are the use case and the language of your reports respectively and ```output``` is ```labels``` or ```concepts``` or ```graphs```.<br />
         <br />Request example: 
     ```bash
-    curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/en/labels
+    curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/labels
     ```
     where ```path/to/examples``` is the path to examples folder. <br />
 
