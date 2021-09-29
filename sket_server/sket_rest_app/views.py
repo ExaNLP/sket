@@ -56,7 +56,7 @@ def annotate(request,use_case = None,language = None,obj = None):
                         for d in dirs:
                             shutil.rmtree(os.path.join(root, d))
         if not store:
-            if obj == 'graph':
+            if obj == 'graphs':
                 return Response(rdf_graphs, status=status.HTTP_201_CREATED)
             elif obj == 'labels':
                 return Response(labels, status=status.HTTP_201_CREATED)
