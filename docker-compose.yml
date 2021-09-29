@@ -1,4 +1,4 @@
-version: "3"
+version: "2.3"
    
 services:
   sket_cpu:
@@ -15,6 +15,9 @@ services:
     
     
   sket_gpu:
+    runtime: nvidia
+    environment:
+        - NVIDIA_VISIBLE_DEVICES=all
 
     build: 
       context: .
@@ -24,8 +27,4 @@ services:
       - .:/code
     ports:
       - "8001:8001"
-    command: bash -c 'python manage.py runserver 0.0.0.0:8001'
-  
-
-
-
+    command: bash -c 'python3 manage.py runserver 0.0.0.0:8001'
