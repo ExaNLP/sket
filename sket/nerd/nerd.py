@@ -1032,12 +1032,150 @@ class NERD(object):
 		Returns: matched ontology concept label(s)
 		"""
 
-		return self.associate_mention2candidate(mention, labels, sim_thr)
-
-	# CERVIX SPECIFIC POST PROCESSING OPERATIONS
+		if 'neuroendocrine' in mention.text:  # mention (possibly) contains 'neuroendocrine carcinoma'
+			return self.link_lung_neuroendocrine_carcinoma(mention, debug)
+		elif 'large' in mention.text and 'cell' in mention.text:  # mention (possibly) contains 'large cell carcinoma'
+			return self.link_lung_large_carcinoma(mention)
+		elif 'squamo' in mention.text:  # mention (possibly) contains 'squamous carcinoma' or 'squamocellular carcinoma'
+			return self.link_lung_squamous_carcinoma(mention)
+		elif 'adenocarcinoma' in mention.text or 'metasta' in mention.text:  # mention contains 'adenocarcinoma' or (possibly) 'metastatic neoplasm'
+			return self.link_lung_adenocarcinoma(mention, debug)
+		elif 'pleomorphic carcinoma' in mention.text or 'pleomorphic cancer' in mention.text:  # mention contains 'pleomorphic carcinoma'
+			return self.link_lung_pleomorphic_carcinoma(mention)
+		elif 'neoplasm' in mention.text:  # mention contains 'neoplasm'
+			return self.link_lung_neoplasm(mention)
+		else:  # none of the ad hoc functions was required -- perform similarity-based linking
+			return self.associate_mention2candidate(mention, labels, sim_thr)
 
 	@staticmethod
-	def ad_hoc_lung_post_processing(mentions_and_concepts):  # TODO: use this if post processing operations are required for lung
+	def link_lung_large_carcinoma(mention):
+		"""
+		Link large cell carcinoma mentions to the correct concepts
+
+		Params:
+			mention (spacy.tokens.span.Span): (large cell carcinoma) entity mention extracted from text
+
+		Returns: return large cell carcinoma concept
+		"""
+		
+		assert 'large' in mention.text and 'cell' in mention.text  # mention possibly refers to large cell carcinoma
+		if 'carcinoma' in mention.text or 'cancer' in mention.text or 'tumor' in mention.text:  # mention refers to large cell carcinoma
+			return [[mention.text, 'lung large cell carcinoma']]
+		else:  # mention does not refer to large cell carcinoma
+			return [[mention.text, None]]
+
+	@staticmethod
+	def link_lung_squamous_carcinoma(mention):
+		"""
+		Link squamous/squamocellular carcinoma mentions to the correct concepts
+
+		Params:
+			mention (spacy.tokens.span.Span): (squamous/squamocellular carcinoma) entity mention extracted from text
+
+		Returns: return squamocellular carcinoma concept
+		"""
+
+		if 'squamous' in mention.text:  # mention possibly refers to squamous carcinoma
+			if 'carcinoma' in mention.text or 'cancer' in mention.text or 'tumor' in mention.text:  # mention refers to squamous carcinoma
+				return [[mention.text, 'non-small cell squamous lung carcinoma']]
+			else:  # mention does not refer to squamous carcinoma
+				return [[mention.text, None]]
+		elif 'squamocellular' in mention.text:  # mention possibly refers to squamocellular carcinoma
+			if 'carcinoma' in mention.text or 'cancer' in mention.text or 'tumor' in mention.text:  # mention refers to squamocellular carcinoma
+				return [[mention.text, 'non-small cell squamous lung carcinoma']]
+			else:  # mention does not refer to squamocellular carcinoma
+				return [[mention.text, None]]
+		else:  # mention does not refer to squamous/squamocellular carcinoma
+			return [[mention.text, None]]
+
+	@staticmethod
+	def link_lung_adenocarcinoma(mention, debug=False):
+		"""
+		Link lung adenocarcinoma mentions to the correct concepts
+
+		Params:
+			mention (spacy.tokens.span.Span): (adenocarcinoma) entity mention extracted from text
+			debug (bool): whether to keep flags for debugging
+
+		Returns: return lung adenocarcinoma concept
+		"""
+
+		assert 'adenocarcinoma' in mention.text or 'metasta' in mention.text
+		if 'adenocarcinoma' in mention.text:  # mention contains adenocarcinoma
+			if 'clear cell' in mention.text or 'clear-cell' in mention.text:  # mention refers to clear cell adenocarcinoma
+				return [[mention.text, 'clear cell adenocarcinoma']]
+			else:  # mention refers to lung adenocarcinoma (general)
+				return [[mention.text, 'lung adenocarcinoma']]
+		else:  # mention (possibly) refers to metastatic neoplasm
+			if 'neoplasm' in mention.text or 'tumor' in mention.text or 'disease' in mention.text or 'metastasis' in mention.text:  # mention refers to metastatic neoplasm
+				return [[mention.text, 'metastatic neoplasm']]
+			else:  # mention does not contain terms related to metastatic neoplasm -- unhandled
+				if debug:
+					print('mention does not contain terms related to metastatic neoplasm -- set temp to None')
+					print(mention.text)
+				return [[mention.text, None]]
+
+	@staticmethod
+	def link_lung_pleomorphic_carcinoma(mention):
+		"""
+		Link pleomorphic carcinoma mentions to non-small cell lung carcinoma
+
+		Params:
+			mention (spacy.tokens.span.Span): (pleomorphic carcinoma) entity mention extracted from text
+
+		Returns: return non-small cell lung carcinoma concept
+		"""
+
+		pleomorphic_mention = mention.text
+		assert 'pleomorphic' in pleomorphic_mention
+		return [[pleomorphic_mention, 'non-small cell lung carcinoma']]
+
+	@staticmethod
+	def link_lung_neoplasm(mention):
+		"""
+		Link neoplasm mentions to malignant lung neoplasm
+
+		Params:
+			mention (spacy.tokens.span.Span): (neoplasm) entity mention extracted from text
+
+		Returns: return malignant lung neoplasm
+		"""
+
+		neoplasm_mention = mention.text
+		assert 'neoplasm' in neoplasm_mention
+		return [[neoplasm_mention, 'malignant lung neoplasm']]
+
+	@staticmethod
+	def link_lung_neuroendocrine_carcinoma(mention, debug=False):
+		"""
+		Link neuroendocrine carcinoma mentions to the correct concepts
+
+		Params:
+			mention (spacy.tokens.span.Span): (neuroendocrine carcinoma) entity mention extracted from text
+			debug (bool): whether to keep flags for debugging
+
+		Returns: return correct concept
+		"""
+
+		assert 'neuroendocrine' in mention.text  # mention possibly refers to neuroendocrine carcinoma
+		if 'carcinoma' in mention.text or 'cancer' in mention.text or 'tumor' in mention.text:  # mention refers to neuroendocrine carcinoma
+			if 'large' in mention.text and 'cell' in mention.text:  # mention refers to large cell neuroendocrine carcinoma
+				return [[mention.text, 'lung large cell carcinoma']]
+			elif 'non' in mention.text and 'small' in mention.text and 'cell' in mention.text:  # mention refers to non-small cell neuroendocrine carcinoma
+				return [[mention.text, 'non-small cell lung carcinoma']]
+			elif 'small' in mention.text and 'cell' in mention.text:  # mention refers to small cell neuroendocrine carcinoma
+				return [[mention.text, 'small cell lung carcinoma']]
+			else:  # mention does not refer to neither large nor small cell carcinoma
+				return [[mention.text, 'lung carcinoma']]
+		else:  # mention does not contain enough terms to identify neuroendocrine carcinoma -- unhandled
+			if debug:
+				print('mention does not contain enough terms to identify neuroendocrine carcinoma -- set temp to None')
+				print(mention.text)
+			return [[mention.text, None]]
+
+	# LUNG SPECIFIC POST PROCESSING OPERATIONS
+
+	def ad_hoc_lung_post_processing(self, mentions_and_concepts):
 		"""
 		Perform set of post processing operations
 
@@ -1047,7 +1185,87 @@ class NERD(object):
 		Returns: mentions and concepts after post processing operations
 		"""
 
-		return mentions_and_concepts
+		new_mentions_and_concepts = self.remove_lung_cell_unrelated_concepts(mentions_and_concepts)
+		new_mentions_and_concepts = self.remove_lung_neoplasm_unrelated_concepts(new_mentions_and_concepts)
+		return new_mentions_and_concepts
+
+	@staticmethod
+	def remove_lung_cell_unrelated_concepts(mentions_and_concepts):
+		"""
+		Remove mentions containing terms unrelated to cell-based carcinoma
+
+		Params:
+			mentions_and_concepts (list(list(str))): list of mentions and concepts extracted from report
+
+		Returns: mentions and concepts after unrelated cell-based carcinoma removal
+		"""
+
+		new_mentions_and_concepts = []
+		for m_and_c in mentions_and_concepts:
+			if 'small cell lung carcinoma' == m_and_c[1]:  # mention refers to 'small cell lung carcinoma'
+				if 'small' in m_and_c[0] and 'cell' in m_and_c[0]:  # mention contains small cell
+					if 'carcinoma' in m_and_c[0] or 'cancer' in m_and_c[0] or 'tumor' in m_and_c[0]:  # mention related to cancer -- keep it
+						new_mentions_and_concepts.append(m_and_c)
+					else:  # mention not related to cancer -- remove it
+						new_mentions_and_concepts.append([m_and_c[0], None])
+				else:  # mention does not contain small cell -- remove it
+					new_mentions_and_concepts.append([m_and_c[0], None])
+			elif 'non-small cell lung carcinoma' == m_and_c[1]:  # mention refers to 'non-small cell lung carcinoma'
+				if 'non' in m_and_c[0] and 'small' in m_and_c[0] and 'cell' in m_and_c[0]:  # mention contains non[-]small cell
+					if 'carcinoma' in m_and_c[0] or 'cancer' in m_and_c[0] or 'tumor' in m_and_c[0]:  # mention related to cancer -- keep it
+						new_mentions_and_concepts.append(m_and_c)
+					else:  # mention not related to cancer -- remove it
+						new_mentions_and_concepts.append([m_and_c[0], None])
+				else:  # mention does not contain non[-]small cell -- remove it
+					new_mentions_and_concepts.append([m_and_c[0], None])
+			elif 'lung large cell carcinoma' == m_and_c[1]:  # mention refers to 'lung large cell carcinoma'
+				if 'large' in m_and_c[0] and 'cell' in m_and_c[0]:  # mention contains large cell
+					if 'carcinoma' in m_and_c[0] or 'cancer' in m_and_c[0] or 'tumor' in m_and_c[0]:  # mention related to cancer -- keep it
+						new_mentions_and_concepts.append(m_and_c)
+					else:  # mention not related to cancer -- remove it
+						new_mentions_and_concepts.append([m_and_c[0], None])
+				else:  # mention does not contain large cell -- remove it
+					new_mentions_and_concepts.append([m_and_c[0], None])
+			elif 'clear cell adenocarcinoma' == m_and_c[1]:  # mention refers to 'clear cell adenocarcinoma'
+				if 'clear' in m_and_c[0] and 'cell' in m_and_c[0]:  # mention contains clear cell
+					if 'adenocarcinoma' in m_and_c[0]:  # mention related to adenocarcinoma -- keep it
+						new_mentions_and_concepts.append(m_and_c)
+					else:  # mention not related to adenocarcinoma -- remove it
+						new_mentions_and_concepts.append([m_and_c[0], None])
+				else:  # mention does not contain clear cell -- remove it
+					new_mentions_and_concepts.append([m_and_c[0], None])
+			else:  # concept not part of cell-based carcinoma concepts -- keep it
+				new_mentions_and_concepts.append(m_and_c)
+		# return post processed mentions and concepts
+		return new_mentions_and_concepts
+
+	@staticmethod
+	def remove_lung_neoplasm_unrelated_concepts(mentions_and_concepts):
+		"""
+		Remove mentions containing terms unrelated to neoplasm
+
+		Params:
+			mentions_and_concepts (list(list(str))): list of mentions and concepts extracted from report
+
+		Returns: mentions and concepts after unrelated neoplasm removal
+		"""
+
+		new_mentions_and_concepts = []
+		for m_and_c in mentions_and_concepts:
+			if 'malignant lung neoplasm' == m_and_c[1]:  # mention refers to 'malignant lung neoplasm'
+				if 'neoplasm' in m_and_c[0]:  # mention related to neoplasm -- keep it
+					new_mentions_and_concepts.append(m_and_c)
+				else:  # mention not related to neoplasm -- remove it
+					new_mentions_and_concepts.append([m_and_c[0], None])
+			elif 'metastatic neoplasm' == m_and_c[1]:  # mention refers to 'metastatic neoplasm'
+				if 'neoplasm' in m_and_c[0] or 'metastasis' in m_and_c[0] or 'disease' in m_and_c[0]:  # mention related to neoplasm -- keep it
+					new_mentions_and_concepts.append(m_and_c)
+				else:  # mention not related to neoplasm -- remove it
+					new_mentions_and_concepts.append([m_and_c[0], None])
+			else:  # concept not part of neoplasm concepts -- keep it
+				new_mentions_and_concepts.append(m_and_c)
+		# return post processed mentions and concepts
+		return new_mentions_and_concepts
 
 	# ONTOLOGY-RELATED FUNCTIONS
 

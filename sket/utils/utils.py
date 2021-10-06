@@ -420,29 +420,31 @@ def aoec_cervix_concepts2labels(report_concepts):
 			'hpv': 0, 'koilocytes': 0,
 			'glands_norm': 0, 'squamous_norm': 0
 		}
-		# textify diagnosis section
-		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# make diagnosis section a set
+		diagnosis = set([concept[1].lower() for concept in rconcepts['Diagnosis']])
 		# update pre-defined labels w/ 1 in case of label presence
-		if 'cervical squamous cell carcinoma' in diagnosis:
-			report_labels[rid]['cancer_scc_inv'] = 1
-		if 'squamous carcinoma in situ' in diagnosis or 'squamous intraepithelial neoplasia' in diagnosis:
-			report_labels[rid]['cancer_scc_insitu'] = 1
-		if 'cervical adenocarcinoma' in diagnosis:
-			if 'cervical adenocarcinoma in situ' in diagnosis:
-				report_labels[rid]['cancer_adeno_insitu'] = 1
-			else:
-				report_labels[rid]['cancer_adeno_inv'] = 1
-		if 'low grade cervical squamous intraepithelial neoplasia' in diagnosis:
-			report_labels[rid]['lgd'] = 1
-		if 'squamous carcinoma in situ' in diagnosis or \
-			'squamous intraepithelial neoplasia' in diagnosis or \
-			'cervical squamous intraepithelial neoplasia 2' in diagnosis or \
-			'cervical intraepithelial neoplasia grade 2/3' in diagnosis:
-			report_labels[rid]['hgd'] = 1
-		if 'human papilloma virus infection' in diagnosis:
-			report_labels[rid]['hpv'] = 1
-		if 'koilocytotic squamous cell' in diagnosis:
-			report_labels[rid]['koilocytes'] = 1
+		for d in diagnosis:
+			if 'cervical squamous cell carcinoma' == d:
+				report_labels[rid]['cancer_scc_inv'] = 1
+			if 'squamous carcinoma in situ' == d or 'squamous intraepithelial neoplasia' == d:
+				report_labels[rid]['cancer_scc_insitu'] = 1
+			if 'cervical adenocarcinoma' in d:
+				if 'cervical adenocarcinoma in situ' == d:
+					report_labels[rid]['cancer_adeno_insitu'] = 1
+				else:
+					report_labels[rid]['cancer_adeno_inv'] = 1
+			if 'low grade cervical squamous intraepithelial neoplasia' == d:
+				report_labels[rid]['lgd'] = 1
+			if 'squamous carcinoma in situ' == d or \
+				'squamous intraepithelial neoplasia' == d or \
+				'cervical squamous intraepithelial neoplasia 2' == d or \
+				'cervical intraepithelial neoplasia grade 2/3' == d:
+				report_labels[rid]['hgd'] = 1
+			if 'human papilloma virus infection' == d:
+				report_labels[rid]['hpv'] = 1
+			if 'koilocytotic squamous cell' == d:
+				report_labels[rid]['koilocytes'] = 1
+		# update when no label has been set to 1
 		if sum(report_labels[rid].values()) == 0:
 			report_labels[rid]['glands_norm'] = 1
 			report_labels[rid]['squamous_norm'] = 1
@@ -499,17 +501,19 @@ def aoec_lung_concepts2labels(report_concepts):
 		# assign pre-defined set of labels to current report
 		report_labels[rid] = {
 			'cancer_scc': 0, 'cancer_nscc_adeno': 0, 'cancer_nscc_squamous': 0, 'cancer_nscc_large': 0, 'no_cancer': 0}
-		# textify diagnosis section
-		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# make diagnosis section a set
+		diagnosis = set([concept[1].lower() for concept in rconcepts['Diagnosis']])
 		# update pre-defined labels w/ 1 in case of label presence
-		if 'small cell lung carcinoma' in diagnosis:
-			report_labels[rid]['cancer_scc'] = 1
-		if 'lung adenocarcinoma' in diagnosis or 'clear cell adenocarcinoma' in diagnosis or 'metastatic neoplasm' in diagnosis:
-			report_labels[rid]['cancer_nscc_adeno'] = 1
-		if 'non-small cell squamous lung carcinoma' in diagnosis:
-			report_labels[rid]['cancer_nscc_squamous'] = 1
-		if 'lung large cell carcinoma' in diagnosis:
-			report_labels[rid]['cancer_nscc_large'] = 1
+		for d in diagnosis:
+			if 'small cell lung carcinoma' == d:
+				report_labels[rid]['cancer_scc'] = 1
+			if 'lung adenocarcinoma' == d or 'clear cell adenocarcinoma' == d or 'metastatic neoplasm' == d:
+				report_labels[rid]['cancer_nscc_adeno'] = 1
+			if 'non-small cell squamous lung carcinoma' == d:
+				report_labels[rid]['cancer_nscc_squamous'] = 1
+			if 'lung large cell carcinoma' == d:
+				report_labels[rid]['cancer_nscc_large'] = 1
+		# update when no label has been set to 1
 		if sum(report_labels[rid].values()) == 0:
 			report_labels[rid]['no_cancer'] = 1
 	return report_labels
@@ -600,32 +604,35 @@ def radboud_cervix_concepts2labels(report_concepts):
 			'hpv': 0, 'koilocytes': 0,
 			'glands_norm': 0, 'squamous_norm': 0
 		}
-		# textify diagnosis section
-		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['concepts']['Diagnosis']])
+		# make diagnosis section a set
+		diagnosis = set([concept[1].lower() for concept in rconcepts['concepts']['Diagnosis']])
 		# update pre-defined labels w/ 1 in case of label presence
-		if 'cervical squamous cell carcinoma' in diagnosis:
-			report_labels[rid]['cancer_scc_inv'] = 1
-		if 'squamous carcinoma in situ' in diagnosis or 'squamous intraepithelial neoplasia' in diagnosis:
-			report_labels[rid]['cancer_scc_insitu'] = 1
-		if 'cervical adenocarcinoma' in diagnosis:
-			if 'cervical adenocarcinoma in situ' in diagnosis:
-				report_labels[rid]['cancer_adeno_insitu'] = 1
-			else:
-				report_labels[rid]['cancer_adeno_inv'] = 1
-		if 'low grade cervical squamous intraepithelial neoplasia' in diagnosis:
-			report_labels[rid]['lgd'] = 1
-		if 'squamous carcinoma in situ' in diagnosis or \
-			'squamous intraepithelial neoplasia' in diagnosis or \
-			'cervical squamous intraepithelial neoplasia 2' in diagnosis or \
-			'cervical intraepithelial neoplasia grade 2/3' in diagnosis:
-			report_labels[rid]['hgd'] = 1
-		if 'human papilloma virus infection' in diagnosis:
-			report_labels[rid]['hpv'] = 1
-		if 'koilocytotic squamous cell' in diagnosis:
-			report_labels[rid]['koilocytes'] = 1
+		for d in diagnosis:
+			if 'cervical squamous cell carcinoma' == d:
+				report_labels[rid]['cancer_scc_inv'] = 1
+			if 'squamous carcinoma in situ' == d or 'squamous intraepithelial neoplasia' == d:
+				report_labels[rid]['cancer_scc_insitu'] = 1
+			if 'cervical adenocarcinoma' in d:
+				if 'cervical adenocarcinoma in situ' == d:
+					report_labels[rid]['cancer_adeno_insitu'] = 1
+				else:
+					report_labels[rid]['cancer_adeno_inv'] = 1
+			if 'low grade cervical squamous intraepithelial neoplasia' == d:
+				report_labels[rid]['lgd'] = 1
+			if 'squamous carcinoma in situ' == d or \
+				'squamous intraepithelial neoplasia' == d or \
+				'cervical squamous intraepithelial neoplasia 2' == d or \
+				'cervical intraepithelial neoplasia grade 2/3' == d:
+				report_labels[rid]['hgd'] = 1
+			if 'human papilloma virus infection' == d:
+				report_labels[rid]['hpv'] = 1
+			if 'koilocytotic squamous cell' == d:
+				report_labels[rid]['koilocytes'] = 1
+		# update when no label has been set to 1
 		if sum(report_labels[rid].values()) == 0:
 			report_labels[rid]['glands_norm'] = 1
 			report_labels[rid]['squamous_norm'] = 1
+
 		if 'slide_ids' in rconcepts:
 			report_labels[rid]['slide_ids'] = rconcepts['slide_ids']
 	return report_labels
@@ -748,29 +755,31 @@ def cervix_concepts2labels(report_concepts):
 			'hpv': 0, 'koilocytes': 0,
 			'glands_norm': 0, 'squamous_norm': 0
 		}
-		# textify diagnosis section
-		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# make diagnosis section a set
+		diagnosis = set([concept[1].lower() for concept in rconcepts['Diagnosis']])
 		# update pre-defined labels w/ 1 in case of label presence
-		if 'cervical squamous cell carcinoma' in diagnosis:
-			report_labels[rid]['cancer_scc_inv'] = 1
-		if 'squamous carcinoma in situ' in diagnosis or 'squamous intraepithelial neoplasia' in diagnosis:
-			report_labels[rid]['cancer_scc_insitu'] = 1
-		if 'cervical adenocarcinoma' in diagnosis:
-			if 'cervical adenocarcinoma in situ' in diagnosis:
-				report_labels[rid]['cancer_adeno_insitu'] = 1
-			else:
-				report_labels[rid]['cancer_adeno_inv'] = 1
-		if 'low grade cervical squamous intraepithelial neoplasia' in diagnosis:
-			report_labels[rid]['lgd'] = 1
-		if 'squamous carcinoma in situ' in diagnosis or \
-				'squamous intraepithelial neoplasia' in diagnosis or \
-				'cervical squamous intraepithelial neoplasia 2' in diagnosis or \
-				'cervical intraepithelial neoplasia grade 2/3' in diagnosis:
-			report_labels[rid]['hgd'] = 1
-		if 'human papilloma virus infection' in diagnosis:
-			report_labels[rid]['hpv'] = 1
-		if 'koilocytotic squamous cell' in diagnosis:
-			report_labels[rid]['koilocytes'] = 1
+		for d in diagnosis:
+			if 'cervical squamous cell carcinoma' == d:
+				report_labels[rid]['cancer_scc_inv'] = 1
+			if 'squamous carcinoma in situ' == d or 'squamous intraepithelial neoplasia' == d:
+				report_labels[rid]['cancer_scc_insitu'] = 1
+			if 'cervical adenocarcinoma' in d:
+				if 'cervical adenocarcinoma in situ' == d:
+					report_labels[rid]['cancer_adeno_insitu'] = 1
+				else:
+					report_labels[rid]['cancer_adeno_inv'] = 1
+			if 'low grade cervical squamous intraepithelial neoplasia' == d:
+				report_labels[rid]['lgd'] = 1
+			if 'squamous carcinoma in situ' == d or \
+					'squamous intraepithelial neoplasia' == d or \
+					'cervical squamous intraepithelial neoplasia 2' == d or \
+					'cervical intraepithelial neoplasia grade 2/3' == d:
+				report_labels[rid]['hgd'] = 1
+			if 'human papilloma virus infection' == d:
+				report_labels[rid]['hpv'] = 1
+			if 'koilocytotic squamous cell' == d:
+				report_labels[rid]['koilocytes'] = 1
+		# update when no label has been set to 1
 		if sum(report_labels[rid].values()) == 0:
 			report_labels[rid]['glands_norm'] = 1
 			report_labels[rid]['squamous_norm'] = 1
@@ -827,17 +836,19 @@ def lung_concepts2labels(report_concepts):
 		# assign pre-defined set of labels to current report
 		report_labels[rid] = {
 			'cancer_scc': 0, 'cancer_nscc_adeno': 0, 'cancer_nscc_squamous': 0, 'cancer_nscc_large': 0, 'no_cancer': 0}
-		# textify diagnosis section
-		diagnosis = ' '.join([concept[1].lower() for concept in rconcepts['Diagnosis']])
+		# make diagnosis section a set
+		diagnosis = set([concept[1].lower() for concept in rconcepts['Diagnosis']])
 		# update pre-defined labels w/ 1 in case of label presence
-		if 'small cell lung carcinoma' in diagnosis:
-			report_labels[rid]['cancer_scc'] = 1
-		if 'lung adenocarcinoma' in diagnosis or 'clear cell adenocarcinoma' in diagnosis or 'metastatic neoplasm' in diagnosis:
-			report_labels[rid]['cancer_nscc_adeno'] = 1
-		if 'non-small cell squamous lung carcinoma' in diagnosis:
-			report_labels[rid]['cancer_nscc_squamous'] = 1
-		if 'lung large cell carcinoma' in diagnosis:
-			report_labels[rid]['cancer_nscc_large'] = 1
+		for d in diagnosis:
+			if 'small cell lung carcinoma' == d:
+				report_labels[rid]['cancer_scc'] = 1
+			if 'lung adenocarcinoma' == d or 'clear cell adenocarcinoma' == d or 'metastatic neoplasm' == d:
+				report_labels[rid]['cancer_nscc_adeno'] = 1
+			if 'non-small cell squamous lung carcinoma' == d:
+				report_labels[rid]['cancer_nscc_squamous'] = 1
+			if 'lung large cell carcinoma' == d:
+				report_labels[rid]['cancer_nscc_large'] = 1
+		# update when no label has been set to 1
 		if sum(report_labels[rid].values()) == 0:
 			report_labels[rid]['no_cancer'] = 1
 	return report_labels

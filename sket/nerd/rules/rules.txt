@@ -19,3 +19,5 @@ uterine cervix carcinoma	in situ	POST	EXACT	cervix
 leep	cervical	BOTH	EXACT	cervix
 epithelium	exocervical,endocervical	BOTH	EXACT	cervix
 squamous intraepithelial lesion	low-grade,low grade,low,high-grade,high grade,high	BOTH	LOOSE	cervix
+neuroendocrine	large-cell,large cell,large,non-small cell,non small cell,small-cell,small cell,small	PRE	EXACT	lung
+cell	non-small,non small,small,large,clear	PRE	EXACT	lung
