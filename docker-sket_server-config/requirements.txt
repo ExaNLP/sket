@@ -16,3 +16,4 @@ scikit_learn==0.24.2
 sentencepiece
 openpyxl
 djangorestframework
+pyparsing==2.4.7
