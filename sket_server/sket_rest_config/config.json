@@ -3,5 +3,6 @@
   "fasttext_model": null,
   "bert_model":null,
   "string_model": false,
-  "gpu":null
+  "gpu":null,
+  "thr":0.9
 }

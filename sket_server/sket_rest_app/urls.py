@@ -10,7 +10,8 @@ urlpatterns = [
     # path('annotate/<use_case>/<language>/<object>', views.annotate, name='annotate'),
     path('', views.annotate, name='annotate'),
     # path('annotate/<reports>', views.annotate, name='annotate'),
-    path('annotate/<use_case>/<language>/<obj>', views.annotate, name='annotate'),
+    path('annotate/<use_case>/<language>/<obj>/<rdf_format>', views.annotate, name='annotate'),    
+    path('annotate/<use_case>/<language>/<obj>', views.annotate, name='annotate'), 
     path('annotate/<use_case>/<language>', views.annotate, name='annotate'),
 
 ]
