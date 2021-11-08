@@ -656,11 +656,11 @@ class SKET(object):
         if store:  # store graphs
             # RDF graphs
             if rdf_format in ['all', 'n3']:
-                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3', rdf_format)
+                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3', 'n3')
             if rdf_format in ['all', 'trig']:
-                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig', rdf_format)
+                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig', 'trig')
             if rdf_format in ['all', 'turtle']:
-                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl', rdf_format)
+                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl', 'turtle')
             # JSON graphs
             self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json', rdf_format)
         else:  # return serialized graphs as stream
