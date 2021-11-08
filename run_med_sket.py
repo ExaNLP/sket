@@ -16,6 +16,7 @@ parser.add_argument('--string_model', default=False, action='store_true', help='
 parser.add_argument('--gpu', default=None, type=int, help='Considered GPU device. If not specified (default to None), use CPU instead.')
 parser.add_argument('--thr', default=0.9, type=float, help='Similarity threshold.')
 parser.add_argument('--store', default=False, action='store_true', help='Whether to store concepts, labels, and graphs.')
+parser.add_argument('--rdf_format', default='all', choices=['n3', 'trig', 'turtle', 'all'], help='Whether to specify the rdf format for graph serialization. If "all" is specified, serialize w/ the three different formats')
 parser.add_argument('--raw', default=False, action='store_true', help='Whether to consider full pipeline or not.')
 parser.add_argument('--debug', default=False, action='store_true', help='Whether to use flags for debugging.')
 parser.add_argument('--dataset', default='', type=str, help='Dataset file path.')
@@ -37,7 +38,7 @@ def main():
         }
 
     # use SKET pipeline to extract concepts, labels, and graphs from dataset
-    sket.med_pipeline(dataset, args.src_lang, args.use_case, args.thr, args.store, args.raw, args.debug)
+    sket.med_pipeline(dataset, args.src_lang, args.use_case, args.thr, args.store, args.rdf_format, args.raw, args.debug)
 
     if args.raw:
         print('processed data up to concepts.')

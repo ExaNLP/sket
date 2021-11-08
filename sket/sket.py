@@ -231,25 +231,28 @@ class SKET(object):
 
         utils.store_labels(labels, l_fpath)
 
-    def store_rdf_graphs(self, graphs, g_fpath):
+    def store_rdf_graphs(self, graphs, g_fpath, rdf_format='turtle'):
         """
         Store RDF graphs w/ RDF serialization format
 
         Params:
             graphs (list): list containing (s,p,o) triples representing ExaMode report(s)
             g_fpath (str): graphs file path
+            rdf_format (str): RDF format used to serialize graphs
 
-        Returns: None
+        Returns: serialized report graph when g_fpath == 'stream' or boolean when g_fpath != 'stream'
         """
 
-        rdf_format = g_fpath.split('.')[-1]
-
-        if rdf_format not in ['ttl', 'n3', 'trig']:  # raise exception
-            print('provide correct format: "ttl", "n3", or "trig".')
+        if rdf_format not in ['turtle', 'n3', 'trig']:  # raise exception
+            print('provide correct format: "turtle", "n3", or "trig".')
             raise Exception
 
-        rdf_format = 'turtle' if rdf_format == 'ttl' else rdf_format
-        self.rdf_proc.serialize_report_graphs(graphs, output=g_fpath, rdf_format=rdf_format)
+        if g_fpath != 'stream':  # check that file type and rdf format coincide
+            ftype = g_fpath.split('.')[-1]
+            ftype = 'turtle' if ftype == 'ttl' else ftype
+            assert ftype == rdf_format
+
+        return self.rdf_proc.serialize_report_graphs(graphs, output=g_fpath, rdf_format=rdf_format)
 
     @staticmethod
     def store_json_graphs(graphs, g_fpath):
@@ -492,9 +495,9 @@ class SKET(object):
         # create RDF graphs
         rdf_graphs, struct_graphs = self.create_exa_graphs(reports, concepts, hospital, struct=True, debug=debug)
         # store RDF graphs
-        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3')
-        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig')
-        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl')
+        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3', 'n3')
+        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig', 'trig')
+        self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl', 'turtle')
         # store JSON graphs
         self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json')
 
@@ -590,7 +593,7 @@ class SKET(object):
         else:
             return rdf_graphs
 
-    def med_pipeline(self, ds, src_lang=None, use_case=None, sim_thr=0.7, store=False, raw=False, debug=False):
+    def med_pipeline(self, ds, src_lang=None, use_case=None, sim_thr=0.7, store=False, rdf_format=None, raw=False, debug=False):
         """
         Perform the complete SKET pipeline over generic data:
             - (i) Process dataset
@@ -610,6 +613,7 @@ class SKET(object):
             hosp (str): considered hospital
             sim_thr (float): keep candidates with sim score greater than or equal to sim_thr
             store (bool): whether to store concepts, labels, and RDF graphs
+            rdf_format (str): RDF format used to serialize graphs
             raw (bool): whether to return concepts within semantic areas or mentions+concepts
             debug (bool): whether to keep flags for debugging
 
@@ -651,10 +655,18 @@ class SKET(object):
         rdf_graphs, struct_graphs = self.create_med_graphs(reports, concepts, struct=True, debug=debug)
         if store:  # store graphs
             # RDF graphs
-            self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3')
-            self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig')
-            self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl')
+            if rdf_format in ['all', 'n3']:
+                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.n3', rdf_format)
+            if rdf_format in ['all', 'trig']:
+                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.trig', rdf_format)
+            if rdf_format in ['all', 'turtle']:
+                self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl', rdf_format)
             # JSON graphs
-            self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json')
-
+            self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json', rdf_format)
+        else:  # return serialized graphs as stream
+            if rdf_format == 'all':
+                print('"all" is not supported for standard (stream) output.\nSupported RDF serialization formats for stream output are: "n3", "trig", and "turtle".')
+                raise Exception
+            else:
+                rdf_graphs = self.store_rdf_graphs(rdf_graphs, 'stream', rdf_format)
         return concepts, labels, rdf_graphs
