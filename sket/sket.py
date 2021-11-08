@@ -593,7 +593,7 @@ class SKET(object):
         else:
             return rdf_graphs
 
-    def med_pipeline(self, ds, src_lang=None, use_case=None, sim_thr=0.7, store=False, rdf_format=None, raw=False, debug=False):
+    def med_pipeline(self, ds, src_lang=None, use_case=None, sim_thr=0.7, store=False, rdf_format='all', raw=False, debug=False):
         """
         Perform the complete SKET pipeline over generic data:
             - (i) Process dataset
