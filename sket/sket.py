@@ -662,7 +662,7 @@ class SKET(object):
             if rdf_format in ['all', 'turtle']:
                 self.store_rdf_graphs(rdf_graphs, rdf_graphs_out + 'graphs_' + ds_name + '.ttl', 'turtle')
             # JSON graphs
-            self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json', rdf_format)
+            self.store_json_graphs(struct_graphs, struct_graphs_out + 'graphs_' + ds_name + '.json')
         else:  # return serialized graphs as stream
             if rdf_format == 'all':
                 print('"all" is not supported for standard (stream) output.\nSupported RDF serialization formats for stream output are: "n3", "trig", and "turtle".')
