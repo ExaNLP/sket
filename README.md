@@ -136,7 +136,7 @@ Instructions on how to build and run sket images are reported below, if you alre
 
 4) Download or clone the [sket](https://github.com/ExaNLP/sket) repository.
 
-5) In ```sket_server/sket_rest_config``` the ```config.json``` file allows you to configure the sket instance, edit this file in order to set the following parameters: ```w2v_model, fasttext_model, bert_model, string_model, gpu```.
+5) In ```sket_server/sket_rest_config``` the ```config.json``` file allows you to configure the sket instance, edit this file in order to set the following parameters: ```w2v_model, fasttext_model, bert_model, string_model, gpu, thr``` where ```thr``` stands for *similarity threshold* and its default value is set to 0.9.
 
 6) Depending on the Docker image of interest, follow one of the two procedures below: <br />
     6a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_cpu ```<br />
