@@ -151,13 +151,25 @@ Instructions on how to build and run sket images are reported below, if you alre
     curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it
     ```
     
-    where ```path/to/examples``` is the path to examples folder.<br /><br />
+    where ```path/to/examples``` is the path to examples folder. With this type of request labels and concepts are stored in ```.json``` files, while graphs are stored in ```.json```,```.n3```,```.ttl```,```.trig``` files.<br />
+    If you want to store exclusively one file format among: ```.n3```,```.ttl```,```.trig```, put after the desired language ```/trig``` if you want to store graphs in ```.trig``` format, ```/turtle``` if you want to store graphs in ```ttl``` format and ```/n3``` if you want to store graphs in ```.n3``` format.  <br />
+       <br /> Request example: 
+    ```bash
+    curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/turtle
+    ```
+    
+    where ```path/to/examples``` is the path to examples folder.<br/><br/>
     8b) If you want to use the labels, the concepts or the graphs returned by sket without saving them the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/<output>``` where ```use_case``` and ```language``` are the use case and the language (identified using [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)) of your reports respectively and ```output``` is ```labels``` or ```concepts``` or ```graphs```.<br />
         <br />Request example: 
     ```bash
     curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/labels
     ```
     where ```path/to/examples``` is the path to examples folder. <br />
+    If you want your request to return a graph, your request must include also the graphs' format. Hence, your request will be: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/graphs/<rdf_format>``` where ```<rdf_format>``` can be on format among:  ```turtle```, ```n3``` and ```trig```.<br/>
+     ```bash
+    curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/graphs/turtle
+    ```
+    where ```path/to/examples``` is the path to examples folder. <br /><br/>
 
 9) If you want to embed your medical reports in the request, change the application type and set: ```-H "Content-Type: application/json"``` then, instead of ```- F "data=@..."``` put: ```-d '{"reports":[{},...,{}]}'``` if you have multiple reports, or: ```-d '{"k":"v",...}'``` if you have a single report.
 
