@@ -136,7 +136,7 @@ Instructions on how to build and run sket images are reported below, if you alre
 
 4) Download or clone the [sket](https://github.com/ExaNLP/sket) repository.
 
-5) In ```sket_server/sket_rest_config``` the ```config.json``` file allows you to configure the sket instance, edit this file in order to set the following parameters: ```w2v_model, fasttext_model, bert_model, string_model, gpu, thr``` where ```thr``` stands for *similarity threshold* and its default value is set to 0.9.
+5) In ```sket_server/sket_rest_config``` the ```config.json``` file allows you to configure the sket instance, edit this file in order to set the following parameters: ```w2v_model```, ```fasttext_model```, ```bert_model```, ```string_model```, ```gpu```, and ```thr```, where ```thr``` stands for *similarity threshold* and its default value is set to 0.9.
 
 6) Depending on the Docker image of interest, follow one of the two procedures below: <br />
     6a) <b>SKET CPU-only</b>: from the [sket](https://github.com/ExaNLP/sket/), type: ```docker-compose run --service-ports sket_cpu ```<br />
@@ -145,33 +145,33 @@ Instructions on how to build and run sket images are reported below, if you alre
 7) When the image is ready, the sket server is running at: http://0.0.0.0:8000 if you run ```sket_cpu ```. If you run ```sket_gpu ``` the server will run at: http://0.0.0.0:8001.
 
 8) The annotation of medical reports can be performed with two types of <b>POST request</b>:<br />
-    8a) If you want to store the annotations in ```outputs``` directory the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>``` where ```use_case``` and ```language``` are the use case and the language (identified using [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)) of your reports respectively.<br />
+    8a) If you want to store the annotations in the ```outputs``` directory, the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>``` where ```use_case``` and ```language``` are the use case and the language (identified using [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)) of your reports, respectively.<br />
    <br /> Request example: 
     ```bash
     curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it
     ```
     
-    where ```path/to/examples``` is the path to examples folder. With this type of request labels and concepts are stored in ```.json``` files, while graphs are stored in ```.json```,```.n3```,```.ttl```,```.trig``` files.<br />
-    If you want to store exclusively one file format among: ```.n3```,```.ttl```,```.trig```, put after the desired language ```/trig``` if you want to store graphs in ```.trig``` format, ```/turtle``` if you want to store graphs in ```ttl``` format and ```/n3``` if you want to store graphs in ```.n3``` format.  <br />
+    where ```path/to/examples``` is the path to the examples folder. With this type of request, labels and concepts are stored in ```.json``` files, while graphs are stored in ```.json```,```.n3```,```.ttl```,```.trig``` files.<br />
+    If you want to store exclusively one file format among ```.n3```,```.ttl```, and ```.trig```, put after the desired language ```/trig``` if you want to store graphs in ```.trig``` format, ```/turtle``` if you want to store graphs in ```ttl``` format and ```/n3``` if you want to store graphs in ```.n3``` format.  <br />
        <br /> Request example: 
     ```bash
     curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/turtle
     ```
     
-    where ```path/to/examples``` is the path to examples folder.<br/><br/>
-    8b) If you want to use the labels, the concepts or the graphs returned by sket without saving them the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/<output>``` where ```use_case``` and ```language``` are the use case and the language (identified using [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)) of your reports respectively and ```output``` is ```labels``` or ```concepts``` or ```graphs```.<br />
+    where ```path/to/examples``` is the path to the examples folder.<br/><br/>
+    8b) If you want to use the labels, the concepts, or the graphs returned by sket without saving them, the URL to make the request to is: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/<output>``` where ```use_case``` and ```language``` are the use case and the language (identified using [ISO 639-1 Code](https://www.loc.gov/standards/iso639-2/php/code_list.php)) of your reports, respectively, and ```output``` is ```labels```, ```concepts```, or ```graphs```.<br />
         <br />Request example: 
     ```bash
     curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/labels
     ```
-    where ```path/to/examples``` is the path to examples folder. <br />
-    If you want your request to return a graph, your request must include also the graphs' format. Hence, your request will be: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/graphs/<rdf_format>``` where ```<rdf_format>``` can be on format among:  ```turtle```, ```n3``` and ```trig```.<br/>
+    where ```path/to/examples``` is the path to the examples folder. <br />
+    If you want your request to return a graph, your request must include also the graph format. Hence, your request will be: ```http://0.0.0.0:8000/annotate/<use_case>/<language>/graphs/<rdf_format>``` where ```<rdf_format>``` can be on format among:  ```turtle```, ```n3``` and ```trig```.<br/>
      ```bash
     curl -H "Content-Type: multipart/form-data" -F "data=@path/to/examples/test.xlsx" http://0.0.0.0:8000/annotate/colon/it/graphs/turtle
     ```
-    where ```path/to/examples``` is the path to examples folder. <br /><br/>
+    where ```path/to/examples``` is the path to the examples folder. <br /><br/>
 
-9) If you want to embed your medical reports in the request, change the application type and set: ```-H "Content-Type: application/json"``` then, instead of ```- F "data=@..."``` put: ```-d '{"reports":[{},...,{}]}'``` if you have multiple reports, or: ```-d '{"k":"v",...}'``` if you have a single report.
+9) If you want to embed your medical reports in the request, change the application type and set: ```-H "Content-Type: application/json"``` then, instead of ```- F "data=@..."``` put ```-d '{"reports":[{},...,{}]}'``` if you have multiple reports, or ```-d '{"k":"v",...}'``` if you have a single report.
 
 10) If you want to build the images again, from the project folder type ```docker-compose down --rmi local```, pay attention that this command will remove all the images created (both CPU and GPU). If you want to remove only one image between CPU and GPU see the [docker image documentation](https://docs.docker.com/engine/reference/commandline/image/). Finally repeat steps 5-8. 
 
