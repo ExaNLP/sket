@@ -64,7 +64,12 @@ class OntoProc(object):
 		# convert query output to DataFrame
 		ontology_dict = defaultdict(list)
 		for e in r:
-			ontology_dict['iri'].append(e[0].toPython() if e[0] else None)
+			# store entity as IRI
+			if self.ontology[e[0]]:  # entity belongs to the ExaMode ontology
+				ontology_dict['iri'].append(self.ontology[e[0]].iri)
+			else:  # entity belongs to external ontologies
+				ontology_dict['iri'].append(e[0].toPython() if e[0] else None)
+			# store additional information associated w/ entity
 			ontology_dict['label'].append(e[1].toPython() if e[1] else None)
 			ontology_dict['SNOMED'].append(e[2].toPython().replace('*', '') if e[2] else None)
 			ontology_dict['UMLS'].append(e[3].toPython() if e[3] else None)

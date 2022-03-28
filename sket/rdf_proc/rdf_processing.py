@@ -1,10 +1,10 @@
 import os
-import uuid
 import hashlib
 import datetime
 import itertools
 
-from rdflib import URIRef, Literal, Graph
+from rdflib import Namespace, URIRef, Literal, Graph
+from rdflib.namespace import DC, RDF
 
 
 class RDFProc(object):
@@ -18,24 +18,25 @@ class RDFProc(object):
 		Returns: None
 		"""
 
-		# set namespaces
-		self.namespace = {'exa': 'https://w3id.org/examode/', 'dc': 'http://purl.org/dc/elements/1.1/'}
+		# set base IRI, namespace, gender, and age information
+		self.base_iri = 'https://w3id.org/examode/'
+		self.namespace = {'exa': Namespace('https://w3id.org/examode/ontology/'), 'dc': DC}
 		self.gender = {'M': 'http://purl.obolibrary.org/obo/NCIT_C46109', 'F': 'http://purl.obolibrary.org/obo/NCIT_C46110'}
 		self.age_set = {
 			'young': 'https://hpo.jax.org/app/browse/term/HP:0011462',
 			'middle': 'https://hpo.jax.org/app/browse/term/HP:0003596',
 			'late': 'https://hpo.jax.org/app/browse/term/HP:0003584'
 		}
+
+		# set predicates that associate Resource w/ Literal
 		self.predicate2literal = [
-			self.namespace['dc'] + 'identifier',
-			self.namespace['exa'] + 'ontology/#hasDiagnosisText',
-			self.namespace['exa'] + 'ontology/#hasAge',
-			self.namespace['exa'] + 'ontology/#hasGender',
-			self.namespace['exa'] + 'ontology/#hasImage',
-			self.namespace['exa'] + 'ontology/#hasBlockNumber',
-			self.namespace['exa'] + 'ontology/#hasSlideId',
-			self.namespace['exa'] + 'ontology/#detectedHumanPapillomaVirus',
-			self.namespace['exa'] + 'ontology/#koylociteDetected'
+			self.namespace['exa']['hasDiagnosisText'],
+			self.namespace['exa']['hasAge'],
+			self.namespace['exa']['hasImage'],
+			self.namespace['exa']['hasBlockNumber'],
+			self.namespace['exa']['hasSlideId'],
+			self.namespace['exa']['detectedHumanPapillomaVirus'],
+			self.namespace['exa']['koylociteDetected']
 		]
 
 	# COMMON FUNCTIONS
@@ -129,12 +130,12 @@ class RDFProc(object):
 		g = Graph()
 		# bind namespaces to given prefix
 		for px, ns in self.namespace.items():
-			g.bind(px, ns, override=True)
+			g.bind(px, ns)
 		# loop over graphs and convert them into rdflib classes
 		for graph in graphs:
 			for triple in graph:
 				s = URIRef(triple[0])
-				p = URIRef(triple[1])
+				p = triple[1]
 				if triple[1] in self.predicate2literal:
 					o = Literal(triple[2])
 				else:
@@ -177,33 +178,33 @@ class RDFProc(object):
 		# create report data-related triples
 
 		# build the IRI for the resource
-		resource = self.namespace['exa'] + 'resource/'
+		resource = self.base_iri + 'resource/'
 
 		# build the IRI for the given report
 		report = resource + 'report/' + hrid
 		struct_graph['ReportURL'] = report
 
 		# build the IRI for the use-case ClinicalCaseReport
-		use_case_ccreport = self.namespace['exa'] + 'ontology/#' + use_case.capitalize() + 'ClinicalCaseReport'
+		use_case_ccreport = self.namespace['exa'][use_case.capitalize() + 'ClinicalCaseReport']
 		struct_graph['ClinicalCase'] = use_case_ccreport
 
 		# generate report data-related triples
-		rdf_graph.append((report, 'a', use_case_ccreport))
-		rdf_graph.append((report, self.namespace['dc'] + 'identifier', hrid))
+		rdf_graph.append((report, RDF.type, use_case_ccreport))
+		rdf_graph.append((report, self.namespace['dc']['identifier'], hrid))
 		if report_data['diagnosis_nlp']:  # textual diagnosis is present within report data
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasDiagnosisText', report_data['diagnosis_nlp']))
+			rdf_graph.append((report, self.namespace['exa']['hasDiagnosisText'], report_data['diagnosis_nlp']))
 			struct_graph['hasDiagnosisText'] = report_data['diagnosis_nlp']
 		if 'image' in report_data:  # report belongs to v2
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasImage', report_data['image']))
+			rdf_graph.append((report, self.namespace['exa']['hasImage'], report_data['image']))
 		if 'internalid' in report_data:  # report belongs to v2
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasBlockNumber', report_data['internalid']))
+			rdf_graph.append((report, self.namespace['exa']['hasBlockNumber'], report_data['internalid']))
 			struct_graph['hasBlockNumber'] = report_data['internalid']
 		else:  # report belongs to v1
 			if len(rid.split('_')) == 1:  # no internalid specified - set to 1
-				rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasBlockNumber', '1'))
+				rdf_graph.append((report, self.namespace['exa']['hasBlockNumber'], '1'))
 				struct_graph['hasBlockNumber'] = '1'
 			else:
-				rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasBlockNumber', rid.split('_')[1]))
+				rdf_graph.append((report, self.namespace['exa']['hasBlockNumber'], rid.split('_')[1]))
 				struct_graph['hasBlockNumber'] = rid.split('_')[1]
 
 		# create patient-related triples
@@ -213,15 +214,15 @@ class RDFProc(object):
 		# generate patient id hashing the first part of the 'rid' field
 		pid = hashlib.md5(rid.split('_')[0].encode()).hexdigest()
 		# build the IRI for the patient
-		patient = self.namespace['exa'] + 'resource/patient/' + pid
+		patient = self.base_iri + 'resource/patient/' + pid
 		struct_graph['patient']['PatientURL'] = patient
 
 		# generate patient-related triples
-		rdf_graph.append((patient, 'a', 'http://purl.obolibrary.org/obo/IDOMAL_0000603'))
+		rdf_graph.append((patient, RDF.type, 'http://purl.obolibrary.org/obo/IDOMAL_0000603'))
 		struct_graph['patient']['a'] = 'http://purl.obolibrary.org/obo/IDOMAL_0000603'
 
 		# associate report to patient
-		rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasClinicalCaseReport', report))
+		rdf_graph.append((patient, self.namespace['exa']['hasClinicalCaseReport'], report))
 		# associate age to patient
 		age = None
 		if 'age' in report_data:  # age data is present within report_data
@@ -230,22 +231,22 @@ class RDFProc(object):
 			age = self.compute_age(report_data['birth_date'], report_data['visit_date'])
 		if age:  # age found within current report
 			# associate age to report
-			rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAge', age))
+			rdf_graph.append((patient, self.namespace['exa']['hasAge'], age))
 			struct_graph['patient']['hasAge'] = age
 
 			# convert age to age set and associate to report
 			if age < 40:  # young 
-				rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAgeOnset', self.age_set['young']))
+				rdf_graph.append((patient, self.namespace['exa']['hasAgeOnset'], self.age_set['young']))
 				struct_graph['patient']['hasAgeOnset'] = self.age_set['young']
 			elif 40 <= age < 60:  # middle
-				rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAgeOnset', self.age_set['middle']))
+				rdf_graph.append((patient, self.namespace['exa']['hasAgeOnset'], self.age_set['middle']))
 				struct_graph['patient']['hasAgeOnset'] = self.age_set['middle']
 			else:  # late
-				rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAgeOnset', self.age_set['late']))
+				rdf_graph.append((patient, self.namespace['exa']['hasAgeOnset'], self.age_set['late']))
 				struct_graph['patient']['hasAgeOnset'] = self.age_set['late']
 		# associate gender to patient
 		if report_data['gender']:  # gender data is present within report_data
-			rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasGender', self.gender[report_data['gender']]))
+			rdf_graph.append((patient, self.namespace['exa']['hasGender'], self.gender[report_data['gender']]))
 			struct_graph['patient']['hasGender'] = self.gender[report_data['gender']]
 			struct_graph['patient']['hasGenderLiteral'] = report_data['gender']
 
@@ -317,17 +318,17 @@ class RDFProc(object):
 			outcomes_struct['OutcomeURL'] = resource_outcome
 
 			# attach outcome instance to graph
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasOutcome', resource_outcome))
+			rdf_graph.append((report, self.namespace['exa']['hasOutcome'], resource_outcome))
 			# specify what the resource_outcome is
 			if use_case == 'cervix':
 				if pair[0] == ontology_hpv:  # outcome is hpv infection
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#detectedHumanPapillomaVirus', pair[0]))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['detectedHumanPapillomaVirus'], pair[0]))
 					outcomes_struct['detectedHumanPapillomaVirus'] = pair[0]
 				if pair[0] == ontology_koilocyte:  # outcome is koilocyte
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#koylociteDetected', pair[0]))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['koylociteDetected'], pair[0]))
 					outcomes_struct['koylociteDetected'] = pair[0]
 			else:  # regular outcome
-				rdf_graph.append((resource_outcome, 'a', pair[0]))
+				rdf_graph.append((resource_outcome, RDF.type, pair[0]))
 				outcomes_struct['a'] = pair[0]
 
 			if use_case == 'colon' and len(pair) > 1:  # target outcome has associated dysplasia
@@ -335,7 +336,7 @@ class RDFProc(object):
 
 				for dysplasia_outcome in pair[1:]:
 					# specify the associated dysplasia
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasDysplasia', dysplasia_outcome))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['hasDysplasia'], dysplasia_outcome))
 					outcomes_struct['hasDysplasia'].append(dysplasia_outcome)
 
 			# 'Anatomical'-related triples
@@ -343,7 +344,7 @@ class RDFProc(object):
 			outcomes_struct['hasLocation'] = []
 			# specify the anatomical location associated to target outcome
 			for location in report_locations:  # @smarchesin TODO: correct? we might link multiple locations to the same outcome
-				rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasLocation', location))
+				rdf_graph.append((resource_outcome, self.namespace['exa']['hasLocation'], location))
 				outcomes_struct['hasLocation'].append(location)
 
 			# 'Procedure'-related triples
@@ -356,17 +357,17 @@ class RDFProc(object):
 				# build the IRI for the identified procedure
 				resource_procedure = resource + 'procedure/' + hrid + '/' + str(report_outcome_n) + '.' + str(ix+1)
 				# attach procedure instance to graph
-				rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasIntervention', resource_procedure))
+				rdf_graph.append((resource_outcome, self.namespace['exa']['hasIntervention'], resource_procedure))
 				intervention_struct['InterventionURL'] = resource_procedure
 
 				# specify what the resource_procedure is
-				rdf_graph.append((resource_procedure, 'a', procedure))
+				rdf_graph.append((resource_procedure, RDF.type, procedure))
 				intervention_struct['a'] = procedure
 
 				intervention_struct['hasTopography'] = []
 				# specify the anatomical location associated to target procedure
 				for location in report_locations:  # @smarchesin TODO: correct? we might associate multiple locations to the same procedure
-					rdf_graph.append((resource_procedure, self.namespace['exa'] + 'ontology/#hasTopography', location))
+					rdf_graph.append((resource_procedure, self.namespace['exa']['hasTopography'], location))
 					intervention_struct['hasTopography'].append(location)
 
 				outcomes_struct['hasIntervention'].append(intervention_struct)
@@ -376,7 +377,7 @@ class RDFProc(object):
 			outcomes_struct['hasTest'] = []
 			if use_case != 'cervix':
 				for test in report_tests:  # @smarchesin TODO: is it correct? in this way we can associate multiple tests to the same outcome
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasTest', test))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['hasTest'], test))
 					outcomes_struct['hasTest'].append(test)
 
 			struct_graph['hasOutcome'].append(outcomes_struct)
@@ -411,23 +412,23 @@ class RDFProc(object):
 		# create report data-related triples
 
 		# build the IRI for the resource
-		resource = self.namespace['exa'] + 'resource/'
+		resource = self.base_iri + 'resource/'
 
 		# build the IRI for the given report
 		report = resource + 'report/' + hrid
 		struct_graph['ReportURL'] = report
 
 		# build the IRI for the use-case ClinicalCaseReport
-		use_case_ccreport = self.namespace['exa'] + 'ontology/#' + use_case.capitalize() + 'ClinicalCaseReport'
+		use_case_ccreport = self.namespace['exa'][use_case.capitalize() + 'ClinicalCaseReport']
 		struct_graph['ClinicalCase'] = use_case_ccreport
 
 		# generate report data-related triples
-		rdf_graph.append((report, 'a', use_case_ccreport))
-		rdf_graph.append((report, self.namespace['dc'] + 'identifier', hrid))
+		rdf_graph.append((report, RDF.type, use_case_ccreport))
+		rdf_graph.append((report, self.namespace['dc']['identifier'], hrid))
 		# store conclusion text from radboud report
 		diagnosis = report_data['diagnosis']
 		if diagnosis:  # textual diagnosis is present within conclusions
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasDiagnosisText', diagnosis))
+			rdf_graph.append((report, self.namespace['exa']['hasDiagnosisText'], diagnosis))
 			struct_graph['hasDiagnosisText'] = diagnosis
 
 		if 'slide_ids' in report_data:
@@ -438,11 +439,11 @@ class RDFProc(object):
 			# generate report slide-related triples
 			for slide_id in report_data['slide_ids']:
 				slide = {}
-				rdf_graph.append((report + '/slide/' + slide_id, 'a', ontology_slide))
+				rdf_graph.append((report + '/slide/' + slide_id, RDF.type, ontology_slide))
 				slide['a'] = ontology_slide
-				rdf_graph.append((report + '/slide/' + slide_id, self.namespace['exa'] + 'ontology/#hasSlideId', slide_id))
+				rdf_graph.append((report + '/slide/' + slide_id, self.namespace['exa']['hasSlideId'], slide_id))
 				slide['hasSlideId'] = slide_id
-				rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasSlide', report + '/slide/' + slide_id))
+				rdf_graph.append((report, self.namespace['exa']['hasSlide'], report + '/slide/' + slide_id))
 				slide['hasSlide'] = report + '/slide/' + slide_id
 				struct_graph['slides'].append(slide)
 
@@ -453,15 +454,15 @@ class RDFProc(object):
 		# generate patient id hashing the first part of the 'rid' field (up to P00000###)
 		pid = hashlib.md5('_'.join(rid.split('_')[0:3]).encode()).hexdigest()
 		# build the IRI for the patient
-		patient = self.namespace['exa'] + 'resource/patient/' + pid
+		patient = self.base_iri + 'resource/patient/' + pid
 		struct_graph['patient']['PatientURL'] = patient
 
 		# generate patient-related triples
-		rdf_graph.append((patient, 'a', 'http://purl.obolibrary.org/obo/IDOMAL_0000603'))
+		rdf_graph.append((patient, RDF.type, 'http://purl.obolibrary.org/obo/IDOMAL_0000603'))
 		struct_graph['patient']['a'] = 'http://purl.obolibrary.org/obo/IDOMAL_0000603'
 
 		# associate report to patient
-		rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasClinicalCaseReport', report))
+		rdf_graph.append((patient, self.namespace['exa']['hasClinicalCaseReport'], report))
 
 		# create report concept-related triples
 
@@ -532,17 +533,17 @@ class RDFProc(object):
 			outcomes_struct['OutcomeURL'] = resource_outcome
 
 			# attach outcome instance to graph
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasOutcome', resource_outcome))
+			rdf_graph.append((report, self.namespace['exa']['hasOutcome'], resource_outcome))
 			# specify what the resource_outcome is
 			if use_case == 'cervix':
 				if pair[0] == ontology_hpv:  # outcome is hpv infection
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#detectedHumanPapillomaVirus', pair[0]))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['detectedHumanPapillomaVirus'], pair[0]))
 					outcomes_struct['detectedHumanPapillomaVirus'] = pair[0]
 				if pair[0] == ontology_koilocyte:  # outcome is koilocyte
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#koylociteDetected', pair[0]))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['koylociteDetected'], pair[0]))
 					outcomes_struct['koylociteDetected'] = pair[0]
 			else:  # regular outcome
-				rdf_graph.append((resource_outcome, 'a', pair[0]))
+				rdf_graph.append((resource_outcome, RDF.type, pair[0]))
 				outcomes_struct['a'] = pair[0]
 
 			if use_case == 'colon' and len(pair) > 1:  # target outcome has associated dysplasia
@@ -550,7 +551,7 @@ class RDFProc(object):
 
 				for dysplasia_outcome in pair[1:]:
 					# specify the associated dysplasia
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasDysplasia', dysplasia_outcome))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['hasDysplasia'], dysplasia_outcome))
 					outcomes_struct['hasDysplasia'].append(dysplasia_outcome)
 
 			# 'Anatomical'-related triples
@@ -558,7 +559,7 @@ class RDFProc(object):
 			outcomes_struct['hasLocation'] = []
 			# specify the anatomical location associated to target outcome
 			for location in report_locations:  # @smarchesin TODO: correct? we might link multiple locations to the same outcome
-				rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasLocation', location))
+				rdf_graph.append((resource_outcome, self.namespace['exa']['hasLocation'], location))
 				outcomes_struct['hasLocation'].append(location)
 
 			# 'Procedure'-related triples
@@ -571,17 +572,17 @@ class RDFProc(object):
 				# build the IRI for the identified procedure
 				resource_procedure = resource + 'procedure/' + hrid + '/' + str(report_outcome_n) + '.' + str(ix+1)
 				# attach procedure instance to graph
-				rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasIntervention', resource_procedure))
+				rdf_graph.append((resource_outcome, self.namespace['exa']['hasIntervention'], resource_procedure))
 				intervention_struct['InterventionURL'] = resource_procedure
 
 				# specify what the resource_procedure is
-				rdf_graph.append((resource_procedure, 'a', procedure))
+				rdf_graph.append((resource_procedure, RDF.type, procedure))
 				intervention_struct['a'] = procedure
 
 				intervention_struct['hasTopography'] = []
 				# specify the anatomical location associated to target procedure
 				for location in report_locations:  # @smarchesin TODO: correct? we might link multiple locations to the same procedure
-					rdf_graph.append((resource_procedure, self.namespace['exa'] + 'ontology/#hasTopography', location))
+					rdf_graph.append((resource_procedure, self.namespace['exa']['hasTopography'], location))
 					intervention_struct['hasTopography'].append(location)
 
 				outcomes_struct['hasIntervention'].append(intervention_struct)
@@ -591,7 +592,7 @@ class RDFProc(object):
 			outcomes_struct['hasTest'] = []
 			if use_case != 'cervix':
 				for test in report_tests:  # @smarchesin TODO: correct? we might link multiple tests to the same outcome
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasTest', test))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['hasTest'], test))
 					outcomes_struct['hasTest'].append(test)
 
 			struct_graph['hasOutcome'].append(outcomes_struct)
@@ -626,23 +627,23 @@ class RDFProc(object):
 		# create report data-related triples
 
 		# build the IRI for the resource
-		resource = self.namespace['exa'] + 'resource/'
+		resource = self.base_iri + 'resource/'
 
 		# build the IRI for the given report
 		report = resource + 'report/' + hrid
 		struct_graph['ReportURL'] = report
 
 		# build the IRI for the use-case ClinicalCaseReport
-		use_case_ccreport = self.namespace['exa'] + 'ontology/#' + use_case.capitalize() + 'ClinicalCaseReport'
+		use_case_ccreport = self.namespace['exa'][use_case.capitalize() + 'ClinicalCaseReport']
 		struct_graph['ClinicalCase'] = use_case_ccreport
 
 		# generate report data-related triples
-		rdf_graph.append((report, 'a', use_case_ccreport))
-		rdf_graph.append((report, self.namespace['dc'] + 'identifier', hrid))
+		rdf_graph.append((report, RDF.type, use_case_ccreport))
+		rdf_graph.append((report, self.namespace['dc']['identifier'], hrid))
 		# store text from report
 		diagnosis = report_data['text']
 		if diagnosis:  # textual diagnosis is present within conclusions
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasDiagnosisText', diagnosis))
+			rdf_graph.append((report, self.namespace['exa']['hasDiagnosisText'], diagnosis))
 			struct_graph['hasDiagnosisText'] = diagnosis
 
 		# create patient-related triples
@@ -652,35 +653,35 @@ class RDFProc(object):
 		# generate patient id
 		pid = 'p_' + rid
 		# build the IRI for the patient
-		patient = self.namespace['exa'] + 'resource/patient/' + pid
+		patient = self.base_iri + 'resource/patient/' + pid
 		struct_graph['patient']['PatientURL'] = patient
 
 		# generate patient-related triples
-		rdf_graph.append((patient, 'a', 'http://purl.obolibrary.org/obo/IDOMAL_0000603'))
+		rdf_graph.append((patient, RDF.type, 'http://purl.obolibrary.org/obo/IDOMAL_0000603'))
 		struct_graph['patient']['a'] = 'http://purl.obolibrary.org/obo/IDOMAL_0000603'
 
 		# associate report to patient
-		rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasClinicalCaseReport', report))
+		rdf_graph.append((patient, self.namespace['exa']['hasClinicalCaseReport'], report))
 		# associate age to patient
 		age = report_data['age']
 		if age:  # age found within current report
 			# associate age to report
-			rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAge', age))
+			rdf_graph.append((patient, self.namespace['exa']['hasAge'], age))
 			struct_graph['patient']['hasAge'] = age
 
 			# convert age to age set and associate to report
 			if age < 40:  # young
-				rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAgeOnset', self.age_set['young']))
+				rdf_graph.append((patient, self.namespace['exa']['hasAgeOnset'], self.age_set['young']))
 				struct_graph['patient']['hasAgeOnset'] = self.age_set['young']
 			elif 40 <= age < 60:  # middle
-				rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAgeOnset', self.age_set['middle']))
+				rdf_graph.append((patient, self.namespace['exa']['hasAgeOnset'], self.age_set['middle']))
 				struct_graph['patient']['hasAgeOnset'] = self.age_set['middle']
 			else:  # late
-				rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasAgeOnset', self.age_set['late']))
+				rdf_graph.append((patient, self.namespace['exa']['hasAgeOnset'], self.age_set['late']))
 				struct_graph['patient']['hasAgeOnset'] = self.age_set['late']
 		# associate gender to patient
 		if report_data['gender']:  # gender data is present within report_data
-			rdf_graph.append((patient, self.namespace['exa'] + 'ontology/#hasGender', self.gender[report_data['gender']]))
+			rdf_graph.append((patient, self.namespace['exa']['hasGender'], self.gender[report_data['gender']]))
 			struct_graph['patient']['hasGender'] = self.gender[report_data['gender']]
 			struct_graph['patient']['hasGenderLiteral'] = report_data['gender']
 
@@ -753,17 +754,17 @@ class RDFProc(object):
 			outcomes_struct['OutcomeURL'] = resource_outcome
 
 			# attach outcome instance to graph
-			rdf_graph.append((report, self.namespace['exa'] + 'ontology/#hasOutcome', resource_outcome))
+			rdf_graph.append((report, self.namespace['exa']['hasOutcome'], resource_outcome))
 			# specify what the resource_outcome is
 			if use_case == 'cervix':
 				if pair[0] == ontology_hpv:  # outcome is hpv infection
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#detectedHumanPapillomaVirus', pair[0]))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['detectedHumanPapillomaVirus'], pair[0]))
 					outcomes_struct['detectedHumanPapillomaVirus'] = pair[0]
 				if pair[0] == ontology_koilocyte:  # outcome is koilocyte
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#koylociteDetected', pair[0]))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['koylociteDetected'], pair[0]))
 					outcomes_struct['koylociteDetected'] = pair[0]
 			else:  # regular outcome
-				rdf_graph.append((resource_outcome, 'a', pair[0]))
+				rdf_graph.append((resource_outcome, RDF.type, pair[0]))
 				outcomes_struct['a'] = pair[0]
 
 			if use_case == 'colon' and len(pair) > 1:  # target outcome has associated dysplasia
@@ -771,7 +772,7 @@ class RDFProc(object):
 
 				for dysplasia_outcome in pair[1:]:
 					# specify the associated dysplasia
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasDysplasia', dysplasia_outcome))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['hasDysplasia'], dysplasia_outcome))
 					outcomes_struct['hasDysplasia'].append(dysplasia_outcome)
 
 			# 'Anatomical'-related triples
@@ -779,7 +780,7 @@ class RDFProc(object):
 			outcomes_struct['hasLocation'] = []
 			# specify the anatomical location associated to target outcome
 			for location in report_locations:  # @smarchesin TODO: correct? we might link multiple locations to the same outcome
-				rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasLocation', location))
+				rdf_graph.append((resource_outcome, self.namespace['exa']['hasLocation'], location))
 				outcomes_struct['hasLocation'].append(location)
 
 			# 'Procedure'-related triples
@@ -792,17 +793,17 @@ class RDFProc(object):
 				# build the IRI for the identified procedure
 				resource_procedure = resource + 'procedure/' + hrid + '/' + str(report_outcome_n) + '.' + str(ix+1)
 				# attach procedure instance to graph
-				rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasIntervention', resource_procedure))
+				rdf_graph.append((resource_outcome, self.namespace['exa']['hasIntervention'], resource_procedure))
 				intervention_struct['InterventionURL'] = resource_procedure
 
 				# specify what the resource_procedure is
-				rdf_graph.append((resource_procedure, 'a', procedure))
+				rdf_graph.append((resource_procedure, RDF.type, procedure))
 				intervention_struct['a'] = procedure
 
 				intervention_struct['hasTopography'] = []
 				# specify the anatomical location associated to target procedure
 				for location in report_locations:  # @smarchesin TODO: correct? we might link multiple locations to the same procedure
-					rdf_graph.append((resource_procedure, self.namespace['exa'] + 'ontology/#hasTopography', location))
+					rdf_graph.append((resource_procedure, self.namespace['exa']['hasTopography'], location))
 					intervention_struct['hasTopography'].append(location)
 
 				outcomes_struct['hasIntervention'].append(intervention_struct)
@@ -812,7 +813,7 @@ class RDFProc(object):
 			outcomes_struct['hasTest'] = []
 			if use_case != 'cervix':
 				for test in report_tests:  # @smarchesin TODO: correct? we might link multiple tests to the same outcome
-					rdf_graph.append((resource_outcome, self.namespace['exa'] + 'ontology/#hasTest', test))
+					rdf_graph.append((resource_outcome, self.namespace['exa']['hasTest'], test))
 					outcomes_struct['hasTest'].append(test)
 
 			struct_graph['hasOutcome'].append(outcomes_struct)
